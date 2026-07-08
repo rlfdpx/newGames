@@ -1,3 +1,5 @@
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 import { createClient } from '@supabase/supabase-js'
 
 const SHEET_ID = '1cHuvHs0-mFSMaM4_qw91ovxU1w6HMlCNW_6JHaqqDMo'
@@ -53,11 +55,11 @@ async function seedPortfolio() {
     sort_order:     i,
   }))
 
-  console.log(`Upserting ${games.length} games…`)
-  const { data, error } = await supabase
-    .from('games')
-    .upsert(games, { onConflict: 'game_name' })
-    .select()
+  // Clear existing data (tasks cascade-delete via FK)
+  await supabase.from('games').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
+  console.log(`Inserting ${games.length} games…`)
+  const { data, error } = await supabase.from('games').insert(games).select()
   if (error) throw error
   return data ?? []
 }

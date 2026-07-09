@@ -2,52 +2,67 @@
 
 import { useState } from 'react'
 import { TaskRow as TRow } from '@/lib/supabaseClient'
+import { GameRow } from '@/lib/supabaseClient'
 import { CATEGORIES } from '@/lib/taskTemplate'
 import TaskRow from './TaskRow'
 
 export default function TaskBoard({
   tasks,
   gameId,
+  allGames,
   onUpdate,
   onAdd,
+  onAddToAll,
   onDelete,
 }: {
   tasks: TRow[]
   gameId: string
+  allGames: GameRow[]
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
   onAdd: (data: Omit<TRow, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  onAddToAll: (data: Omit<TRow, 'id' | 'game_id' | 'created_at' | 'updated_at'>, allGames: GameRow[]) => Promise<void>
   onDelete: (id: string) => Promise<void>
 }) {
   const [addingIn, setAddingIn] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
+  const [adding, setAdding] = useState(false)
 
   const byCategory = CATEGORIES.reduce<Record<string, TRow[]>>((acc, cat) => {
     acc[cat] = tasks.filter((t) => t.category === cat).sort((a, b) => a.sort_order - b.sort_order)
     return acc
   }, {})
 
-  // Tasks in categories not in the template (future-proof)
   const extraCats = [...new Set(tasks.map((t) => t.category))].filter((c) => !CATEGORIES.includes(c))
   extraCats.forEach((c) => { byCategory[c] = tasks.filter((t) => t.category === c) })
 
   const allCats = [...CATEGORIES, ...extraCats]
 
-  const addTask = async (category: string) => {
+  const baseTask = (category: string) => ({
+    category,
+    name: newName.trim(),
+    status: 'Not Started' as const,
+    assignee: null,
+    start_date: null,
+    end_date: null,
+    priority: null,
+    notes: null,
+    sort_order: (byCategory[category]?.length ?? 0) + 100,
+  })
+
+  const handleAdd = async (category: string, scope: 'game' | 'all') => {
     if (!newName.trim()) return
-    await onAdd({
-      game_id: gameId,
-      category,
-      name: newName.trim(),
-      status: 'Not Started',
-      assignee: null,
-      start_date: null,
-      end_date: null,
-      priority: null,
-      notes: null,
-      sort_order: (byCategory[category]?.length ?? 0) + 100,
-    })
-    setNewName('')
-    setAddingIn(null)
+    setAdding(true)
+    try {
+      if (scope === 'all') {
+        await onAddToAll(baseTask(category), allGames)
+      } else {
+        await onAdd({ ...baseTask(category), game_id: gameId })
+      }
+      setNewName('')
+      setAddingIn(null)
+    } finally {
+      setAdding(false)
+    }
   }
 
   return (
@@ -90,16 +105,30 @@ export default function TaskBoard({
             {/* Add task inline */}
             <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
               {addingIn === cat ? (
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center">
                   <input
                     autoFocus
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') addTask(cat); if (e.key === 'Escape') setAddingIn(null) }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(cat, 'game'); if (e.key === 'Escape') setAddingIn(null) }}
                     placeholder="Task name…"
-                    className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 min-w-[180px] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <button onClick={() => addTask(cat)} className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Add</button>
+                  <button
+                    disabled={adding}
+                    onClick={() => handleAdd(cat, 'game')}
+                    className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    This game
+                  </button>
+                  <button
+                    disabled={adding}
+                    onClick={() => handleAdd(cat, 'all')}
+                    title={`Add to all ${allGames.length} games`}
+                    className="text-sm bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    All games ({allGames.length})
+                  </button>
                   <button onClick={() => setAddingIn(null)} className="text-sm text-gray-400 hover:text-gray-600 px-2">Cancel</button>
                 </div>
               ) : (

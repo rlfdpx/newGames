@@ -74,10 +74,20 @@ export function useGames() {
     await loadAll()
   }
 
+  // Adds the same task to every game (used by "Add to all games" in the task board)
+  const addTaskToAllGames = async (
+    data: Omit<TaskRow, 'id' | 'game_id' | 'created_at' | 'updated_at'>,
+    allGames: GameRow[]
+  ) => {
+    const inserts = allGames.map((g) => ({ ...data, game_id: g.id }))
+    await supabase.from('tasks').insert(inserts)
+    await loadAll()
+  }
+
   const deleteTask = async (id: string) => {
     await supabase.from('tasks').delete().eq('id', id)
     await loadAll()
   }
 
-  return { games, tasks, loading, addGame, updateGame, deleteGame, updateTask, addTask, deleteTask }
+  return { games, tasks, loading, addGame, updateGame, deleteGame, updateTask, addTask, addTaskToAllGames, deleteTask }
 }

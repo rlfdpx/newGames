@@ -21,6 +21,7 @@ export const TASK_TEMPLATE: TaskTemplate[] = [
 
   { category: '5. Launch & Follow-up', name: 'Release Date',                          priority: 'High',   sort_order: 14 },
   { category: '5. Launch & Follow-up', name: 'Post-launch Monitoring – Feedback Users', priority: 'Medium', sort_order: 15 },
+  { category: '5. Launch & Follow-up', name: 'Customer service training',               priority: 'High',   sort_order: 16 },
 ]
 
 export const CATEGORIES = [...new Set(TASK_TEMPLATE.map((t) => t.category))]

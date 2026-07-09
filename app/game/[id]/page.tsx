@@ -22,7 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { games, tasks, loading, updateGame, updateTask, addTask, deleteTask } = useGames()
+  const { games, tasks, loading, updateGame, updateTask, addTask, addTaskToAllGames, deleteTask } = useGames()
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
   const [editing, setEditing] = useState(false)
 
@@ -113,8 +113,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         <TaskBoard
           tasks={filteredTasks}
           gameId={id}
+          allGames={games}
           onUpdate={updateTask}
           onAdd={addTask}
+          onAddToAll={addTaskToAllGames}
           onDelete={deleteTask}
         />
       </div>

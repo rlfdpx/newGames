@@ -8,6 +8,7 @@ import SummaryBar from '@/components/SummaryBar'
 import GameCard from '@/components/GameCard'
 import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
+import RecentActivity from '@/components/RecentActivity'
 
 export default function Home() {
   const { games, tasks, loading, addGame, updateGame, deleteGame } = useGames()
@@ -21,6 +22,20 @@ export default function Home() {
     const set = new Set(tasks.map((t) => t.assignee).filter(Boolean) as string[])
     return [...set].sort()
   }, [tasks])
+
+  // Games where any task (or the game itself) was modified today (local calendar date)
+  // updated_at is UTC ISO; compare against local midnight so "today" means the visitor's day
+  const modifiedTodayIds = useMemo(() => {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0)
+    const ids = new Set<string>()
+    tasks.forEach((t) => {
+      if (new Date(t.updated_at) >= startOfToday) ids.add(t.game_id)
+    })
+    games.forEach((g) => {
+      if (new Date(g.updated_at) >= startOfToday) ids.add(g.id)
+    })
+    return ids
+  }, [tasks, games])
 
   const filtered = useMemo(() => {
     const s = filters.search.toLowerCase()
@@ -67,6 +82,7 @@ export default function Home() {
         ) : (
           <>
             <SummaryBar games={derived} />
+            <RecentActivity tasks={tasks} games={games} />
             <FilterBar filters={filters} assignees={assignees} onChange={setFilters} />
 
             {filtered.length === 0 ? (
@@ -79,6 +95,7 @@ export default function Home() {
                   <GameCard
                     key={g.id}
                     game={g}
+                    modifiedToday={modifiedTodayIds.has(g.id)}
                     onEdit={(g) => setEditGame(g)}
                     onDelete={deleteGame}
                   />

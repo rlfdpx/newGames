@@ -22,10 +22,12 @@ const COUNTDOWN_COLORS: Record<string, string> = {
 
 export default function GameCard({
   game,
+  modifiedToday = false,
   onEdit,
   onDelete,
 }: {
   game: GameWithStats
+  modifiedToday?: boolean
   onEdit: (g: GameWithStats) => void
   onDelete: (id: string) => void
 }) {
@@ -33,11 +35,19 @@ export default function GameCard({
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{game.game_name}</p>
-          <h3 className="font-semibold text-gray-900 dark:text-white text-lg leading-tight">
-            {game.code_name || game.game_name}
-          </h3>
+        <div className="flex items-center gap-2 min-w-0">
+          {modifiedToday && (
+            <span
+              title="Modified today"
+              className="shrink-0 w-2 h-2 rounded-full bg-green-400 dark:bg-green-500 animate-pulse"
+            />
+          )}
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{game.game_name}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white text-lg leading-tight">
+              {game.code_name || game.game_name}
+            </h3>
+          </div>
         </div>
         <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLORS[game.overall_status] ?? STATUS_COLORS['On Hold']}`}>
           {game.overall_status}

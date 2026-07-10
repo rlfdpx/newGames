@@ -18,14 +18,17 @@ const STATUS_COLOR: Record<string, string> = {
   'Cancelled':      'var(--nd-accent)',
 }
 
-function SegmentedBar({ completed, total }: { completed: number; total: number }) {
+function SegmentedBar({ completed, inProgress, total }: { completed: number; inProgress: number; total: number }) {
   if (total === 0) return null
   return (
     <div className="flex gap-[2px]" style={{ width: 120 }}>
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} style={{
           height: 4, flex: 1,
-          background: i < completed ? 'var(--nd-success)' : 'var(--nd-border-vis)',
+          background:
+            i < completed ? 'var(--nd-success)' :
+            i < completed + inProgress ? 'var(--nd-warning)' :
+            'var(--nd-border-vis)',
         }} />
       ))}
     </div>
@@ -133,7 +136,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                   / {derived.totalTasks}
                 </span>
               </div>
-              <SegmentedBar completed={derived.completedTasks} total={derived.totalTasks} />
+              <SegmentedBar completed={derived.completedTasks} inProgress={derived.inProgressTasks} total={derived.totalTasks} />
               <div className="nd-label mt-2" style={{ color: 'var(--nd-text-secondary)' }}>
                 {derived.progressPct}% complete
               </div>

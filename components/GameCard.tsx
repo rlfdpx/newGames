@@ -20,7 +20,7 @@ const COUNTDOWN_COLORS: Record<string, string> = {
   none:    'var(--nd-text-disabled)',
 }
 
-function SegmentedBar({ completed, total }: { completed: number; total: number }) {
+function SegmentedBar({ completed, inProgress, total }: { completed: number; inProgress: number; total: number }) {
   if (total === 0) return null
   return (
     <div className="flex gap-[2px] w-full">
@@ -30,7 +30,10 @@ function SegmentedBar({ completed, total }: { completed: number; total: number }
           style={{
             height: 6,
             flex: 1,
-            background: i < completed ? 'var(--nd-success)' : 'var(--nd-border-vis)',
+            background:
+              i < completed ? 'var(--nd-success)' :
+              i < completed + inProgress ? 'var(--nd-warning)' :
+              'var(--nd-border-vis)',
           }}
         />
       ))}
@@ -103,7 +106,7 @@ export default function GameCard({
             <span style={{ color: 'var(--nd-text-secondary)', marginLeft: 4 }}>{game.progressPct}%</span>
           </span>
         </div>
-        <SegmentedBar completed={game.completedTasks} total={game.totalTasks} />
+        <SegmentedBar completed={game.completedTasks} inProgress={game.inProgressTasks} total={game.totalTasks} />
       </div>
 
       {/* Release / countdown */}

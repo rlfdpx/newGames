@@ -14,6 +14,18 @@ type FormData = {
   sort_order: number
 }
 
+const FIELD_STYLE: React.CSSProperties = {
+  background: 'var(--nd-surface-raised)',
+  border: '1px solid var(--nd-border-vis)',
+  borderRadius: 4,
+  color: 'var(--nd-text-primary)',
+  fontFamily: 'Space Mono, monospace',
+  fontSize: 13,
+  padding: '10px 14px',
+  width: '100%',
+  outline: 'none',
+}
+
 export default function GameForm({
   initial,
   onSave,
@@ -24,30 +36,22 @@ export default function GameForm({
   onCancel: () => void
 }) {
   const [form, setForm] = useState<FormData>({
-    game_name: '',
-    code_name: '',
-    overall_status: 'In Development',
-    release_date: '',
-    notes: '',
-    sort_order: 0,
+    game_name: '', code_name: '', overall_status: 'In Development',
+    release_date: '', notes: '', sort_order: 0,
   })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (initial) {
-      setForm({
-        game_name: initial.game_name,
-        code_name: initial.code_name ?? '',
-        overall_status: initial.overall_status,
-        release_date: initial.release_date ?? '',
-        notes: initial.notes ?? '',
-        sort_order: initial.sort_order,
-      })
-    }
+    if (initial) setForm({
+      game_name: initial.game_name, code_name: initial.code_name ?? '',
+      overall_status: initial.overall_status, release_date: initial.release_date ?? '',
+      notes: initial.notes ?? '', sort_order: initial.sort_order,
+    })
   }, [initial])
 
-  const set = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }))
+  const set = (key: keyof FormData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(f => ({ ...f, [key]: e.target.value }))
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,41 +65,57 @@ export default function GameForm({
         notes: form.notes.trim() || null,
         sort_order: form.sort_order,
       })
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-          {initial ? 'Edit Game' : 'Add Game'}
-        </h2>
-        <form onSubmit={submit} className="flex flex-col gap-3">
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.8)' }}
+    >
+      <div
+        style={{
+          background: 'var(--nd-surface)',
+          border: '1px solid var(--nd-border-vis)',
+          borderRadius: 12,
+          padding: 24,
+          width: '100%',
+          maxWidth: 440,
+        }}
+      >
+        {/* Title */}
+        <div className="flex items-center justify-between mb-6">
+          <span className="nd-label" style={{ fontSize: 12 }}>
+            {initial ? '[ Edit Game ]' : '[ New Game ]'}
+          </span>
+          <button className="nd-btn-ghost" onClick={onCancel}>[X]</button>
+        </div>
+
+        <form onSubmit={submit} className="flex flex-col gap-4">
           <Field label="Game Name *">
-            <input required value={form.game_name} onChange={set('game_name')} className={INPUT} placeholder="e.g. Game 6" />
+            <input required value={form.game_name} onChange={set('game_name')} style={FIELD_STYLE} placeholder="Game 6" />
           </Field>
           <Field label="Code Name">
-            <input value={form.code_name} onChange={set('code_name')} className={INPUT} placeholder="Internal name" />
+            <input value={form.code_name} onChange={set('code_name')} style={FIELD_STYLE} placeholder="Internal name" />
           </Field>
           <Field label="Status">
-            <select value={form.overall_status} onChange={set('overall_status')} className={INPUT}>
-              {STATUSES.map((s) => <option key={s}>{s}</option>)}
+            <select value={form.overall_status} onChange={set('overall_status')} style={FIELD_STYLE}>
+              {STATUSES.map(s => <option key={s}>{s}</option>)}
             </select>
           </Field>
           <Field label="Release Date">
-            <input type="date" value={form.release_date} onChange={set('release_date')} className={INPUT} />
+            <input type="date" value={form.release_date} onChange={set('release_date')} style={FIELD_STYLE} />
           </Field>
           <Field label="Notes">
-            <textarea value={form.notes} onChange={set('notes')} className={`${INPUT} resize-none`} rows={2} />
+            <textarea value={form.notes} onChange={set('notes')} style={{ ...FIELD_STYLE, resize: 'none' }} rows={2} />
           </Field>
+
           <div className="flex gap-3 mt-2">
-            <button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg py-2 transition-colors">
-              {saving ? 'Saving…' : initial ? 'Save Changes' : 'Add Game'}
+            <button type="submit" disabled={saving} className="nd-btn-primary flex-1">
+              {saving ? '[Saving...]' : initial ? '[Save]' : '[Add Game]'}
             </button>
-            <button type="button" onClick={onCancel} className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              Cancel
+            <button type="button" onClick={onCancel} className="nd-btn-secondary flex-1">
+              [Cancel]
             </button>
           </div>
         </form>
@@ -104,12 +124,10 @@ export default function GameForm({
   )
 }
 
-const INPUT = 'w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500'
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="nd-label">{label}</label>
       {children}
     </div>
   )

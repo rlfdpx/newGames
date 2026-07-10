@@ -9,6 +9,19 @@ export type Filters = {
   search: string
 }
 
+const SELECT_STYLE: React.CSSProperties = {
+  background: 'var(--nd-surface-raised)',
+  border: '1px solid var(--nd-border-vis)',
+  borderRadius: 4,
+  color: 'var(--nd-text-primary)',
+  fontFamily: 'Space Mono, monospace',
+  fontSize: 12,
+  letterSpacing: '0.04em',
+  padding: '8px 12px',
+  outline: 'none',
+  cursor: 'pointer',
+}
+
 export default function FilterBar({
   filters,
   assignees,
@@ -18,58 +31,50 @@ export default function FilterBar({
   assignees: string[]
   onChange: (f: Filters) => void
 }) {
-  const set = (key: keyof Filters) => (value: string) =>
-    onChange({ ...filters, [key]: value })
+  const set = (key: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    onChange({ ...filters, [key]: e.target.value })
+
+  const hasFilters = filters.status || filters.assignee || filters.priority || filters.search
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-6 items-center">
       <input
         type="text"
-        placeholder="Search games or tasks…"
+        placeholder="SEARCH..."
         value={filters.search}
-        onChange={(e) => set('search')(e.target.value)}
-        className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+        onChange={set('search')}
+        style={{
+          ...SELECT_STYLE,
+          minWidth: 180,
+          fontFamily: 'Space Mono, monospace',
+          textTransform: 'uppercase',
+        }}
+        className="placeholder-[var(--nd-text-disabled)]"
       />
 
-      <select
-        value={filters.status}
-        onChange={(e) => set('status')(e.target.value)}
-        className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">All statuses</option>
-        {STATUSES.map((s) => (
-          <option key={s}>{s}</option>
-        ))}
+      <select value={filters.status} onChange={set('status')} style={SELECT_STYLE}>
+        <option value="">ALL STATUS</option>
+        {STATUSES.map((s) => <option key={s}>{s}</option>)}
       </select>
 
-      <select
-        value={filters.assignee}
-        onChange={(e) => set('assignee')(e.target.value)}
-        className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">All assignees</option>
-        {assignees.map((a) => (
-          <option key={a}>{a}</option>
-        ))}
+      <select value={filters.assignee} onChange={set('assignee')} style={SELECT_STYLE}>
+        <option value="">ALL ASSIGNEES</option>
+        {assignees.map((a) => <option key={a}>{a}</option>)}
       </select>
 
-      <select
-        value={filters.priority}
-        onChange={(e) => set('priority')(e.target.value)}
-        className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">All priorities</option>
+      <select value={filters.priority} onChange={set('priority')} style={SELECT_STYLE}>
+        <option value="">ALL PRIORITY</option>
         <option>High</option>
         <option>Medium</option>
         <option>Low</option>
       </select>
 
-      {(filters.status || filters.assignee || filters.priority || filters.search) && (
+      {hasFilters && (
         <button
+          className="nd-btn-ghost"
           onClick={() => onChange({ status: '', assignee: '', priority: '', search: '' })}
-          className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 px-2"
         >
-          Clear
+          [Clear]
         </button>
       )}
     </div>

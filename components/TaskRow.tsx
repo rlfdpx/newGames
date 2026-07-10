@@ -5,194 +5,185 @@ import { TaskRow as TRow } from '@/lib/supabaseClient'
 import { isTaskOverdue } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
 
-const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Completed']
+const STATUS_OPTIONS  = ['Not Started', 'In Progress', 'Completed']
 const PRIORITY_OPTIONS = ['', 'High', 'Medium', 'Low']
 
-const PRIORITY_COLORS: Record<string, string> = {
-  High:   'text-red-600 dark:text-red-400',
-  Medium: 'text-amber-600 dark:text-amber-400',
-  Low:    'text-gray-400 dark:text-gray-500',
+const STATUS_COLOR: Record<string, string> = {
+  'Completed':   'var(--nd-success)',
+  'In Progress': 'var(--nd-warning)',
+  'Not Started': 'var(--nd-text-disabled)',
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  'Completed':  'text-green-600 dark:text-green-400',
-  'In Progress':'text-blue-600 dark:text-blue-400',
-  'Not Started':'text-gray-400 dark:text-gray-500',
+const PRIORITY_COLOR: Record<string, string> = {
+  High:   'var(--nd-accent)',
+  Medium: 'var(--nd-warning)',
+  Low:    'var(--nd-text-disabled)',
 }
 
-// Single editable cell — shows value, click to edit, blur/Enter to save
-function EditableCell({
-  value,
-  onSave,
-  placeholder = '—',
-  type = 'text',
-  className = '',
-}: {
-  value: string
-  onSave: (v: string) => void
-  placeholder?: string
-  type?: 'text' | 'date'
-  className?: string
-}) {
+function InlineText({
+  value, onSave, placeholder = '—', type = 'text',
+}: { value: string; onSave: (v: string) => void; placeholder?: string; type?: 'text' | 'date' }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const commit = () => {
-    setEditing(false)
-    if (draft !== value) onSave(draft)
-  }
+  const commit = () => { setEditing(false); if (draft !== value) onSave(draft) }
 
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        autoFocus
-        type={type}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
-        className={`w-full bg-white dark:bg-gray-800 border border-blue-400 rounded px-1.5 py-0.5 text-sm focus:outline-none ${className}`}
-      />
-    )
-  }
+  if (editing) return (
+    <input
+      autoFocus
+      type={type}
+      value={draft}
+      onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
+      style={{
+        background: 'var(--nd-surface-raised)',
+        border: '1px solid var(--nd-interactive)',
+        borderRadius: 2,
+        color: 'var(--nd-text-primary)',
+        fontFamily: 'Space Mono, monospace',
+        fontSize: 12,
+        padding: '2px 6px',
+        outline: 'none',
+        width: '100%',
+      }}
+    />
+  )
 
   return (
     <span
       onClick={() => { setDraft(value); setEditing(true) }}
       title="Click to edit"
-      className={`cursor-pointer rounded px-1 py-0.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors ${!value ? 'text-gray-300 dark:text-gray-600 italic' : ''} ${className}`}
+      style={{
+        cursor: 'pointer',
+        color: value ? 'var(--nd-text-primary)' : 'var(--nd-text-disabled)',
+        fontFamily: 'Space Mono, monospace',
+        fontSize: 12,
+        borderRadius: 2,
+        padding: '1px 4px',
+        display: 'block',
+        transition: 'background 100ms',
+      }}
+      className="hover:bg-[var(--nd-surface-raised)]"
     >
-      {value || placeholder}
+      {type === 'date' && value ? formatDate(value) : (value || placeholder)}
     </span>
   )
 }
 
-function SelectCell({
-  value,
-  options,
-  onSave,
-  colorMap = {},
-  className = '',
-}: {
-  value: string
-  options: string[]
-  onSave: (v: string) => void
-  colorMap?: Record<string, string>
-  className?: string
-}) {
+function InlineSelect({
+  value, options, onSave, colorMap = {},
+}: { value: string; options: string[]; onSave: (v: string) => void; colorMap?: Record<string, string> }) {
   return (
     <select
       value={value}
-      onChange={(e) => onSave(e.target.value)}
-      className={`bg-transparent focus:outline-none cursor-pointer rounded px-1 py-0.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors text-sm ${colorMap[value] ?? 'text-gray-400'} ${className}`}
+      onChange={e => onSave(e.target.value)}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        color: colorMap[value] ?? 'var(--nd-text-secondary)',
+        fontFamily: 'Space Mono, monospace',
+        fontSize: 11,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        outline: 'none',
+        padding: '1px 0',
+      }}
     >
-      {options.map((o) => <option key={o} value={o}>{o || '—'}</option>)}
+      {options.map(o => <option key={o} value={o}>{o || '—'}</option>)}
     </select>
   )
 }
 
 export default function TaskRow({
-  task,
-  onUpdate,
-  onDelete,
+  task, onUpdate, onDelete,
 }: {
   task: TRow
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
   onDelete: (id: string) => Promise<void>
 }) {
   const overdue = isTaskOverdue(task)
-  const save = (field: keyof TRow) => (raw: string) => {
-    const value = raw.trim() || null
-    onUpdate(task.id, { [field]: value } as Partial<TRow>)
-  }
+  const save = (field: keyof TRow) => (raw: string) =>
+    onUpdate(task.id, { [field]: raw.trim() || null } as Partial<TRow>)
+
+  const rowBg = overdue ? 'var(--nd-accent-subtle)' : undefined
+  const leftBorder = task.status === 'Completed'
+    ? '2px solid var(--nd-success)'
+    : task.status === 'In Progress'
+    ? '2px solid var(--nd-warning)'
+    : '2px solid transparent'
 
   return (
-    <tr className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors group ${overdue ? 'bg-red-50/40 dark:bg-red-950/10' : ''}`}>
+    <tr
+      className="group"
+      style={{
+        borderBottom: '1px solid var(--nd-border)',
+        background: rowBg,
+        borderLeft: leftBorder,
+      }}
+    >
       {/* Task name */}
       <td className="px-3 py-2 min-w-[160px]">
-        <div className="flex items-center gap-1.5">
-          <EditableCell
-            value={task.name}
-            onSave={(v) => v.trim() && onUpdate(task.id, { name: v.trim() })}
-            className="font-medium text-gray-800 dark:text-gray-200 flex-1"
-          />
-          {overdue && <span className="text-xs text-red-500 shrink-0">overdue</span>}
-        </div>
+        <InlineText
+          value={task.name}
+          onSave={v => v.trim() && onUpdate(task.id, { name: v.trim() })}
+        />
       </td>
 
       {/* Status */}
       <td className="px-3 py-2">
-        <SelectCell
+        <InlineSelect
           value={task.status}
           options={STATUS_OPTIONS}
-          onSave={(v) => onUpdate(task.id, { status: v })}
-          colorMap={STATUS_COLORS}
-          className="font-medium text-xs"
+          onSave={v => onUpdate(task.id, { status: v })}
+          colorMap={STATUS_COLOR}
         />
       </td>
 
       {/* Assignee */}
       <td className="px-3 py-2 min-w-[100px]">
-        <EditableCell
-          value={task.assignee ?? ''}
-          onSave={save('assignee')}
-          placeholder="Assignee"
-          className="text-sm text-gray-500 dark:text-gray-400"
-        />
+        <InlineText value={task.assignee ?? ''} onSave={save('assignee')} placeholder="—" />
       </td>
 
       {/* Priority */}
       <td className="px-3 py-2">
-        <SelectCell
+        <InlineSelect
           value={task.priority ?? ''}
           options={PRIORITY_OPTIONS}
-          onSave={(v) => onUpdate(task.id, { priority: v || null })}
-          colorMap={PRIORITY_COLORS}
-          className="text-xs font-medium"
+          onSave={v => onUpdate(task.id, { priority: v || null })}
+          colorMap={PRIORITY_COLOR}
         />
       </td>
 
-      {/* Start date */}
+      {/* Start */}
       <td className="px-3 py-2">
-        <EditableCell
-          value={task.start_date ?? ''}
-          onSave={save('start_date')}
-          placeholder="Start"
-          type="date"
-          className="text-xs text-gray-400"
-        />
+        <InlineText value={task.start_date ?? ''} onSave={save('start_date')} placeholder="—" type="date" />
       </td>
 
-      {/* End date */}
+      {/* End */}
       <td className="px-3 py-2">
-        <EditableCell
-          value={task.end_date ?? ''}
-          onSave={save('end_date')}
-          placeholder="End"
-          type="date"
-          className="text-xs text-gray-400"
-        />
+        <div className="flex items-center gap-1">
+          <InlineText value={task.end_date ?? ''} onSave={save('end_date')} placeholder="—" type="date" />
+          {overdue && (
+            <span className="nd-label shrink-0" style={{ color: 'var(--nd-accent)', fontSize: 9 }}>OVR</span>
+          )}
+        </div>
       </td>
 
       {/* Notes */}
-      <td className="px-3 py-2 max-w-[200px]">
-        <EditableCell
-          value={task.notes ?? ''}
-          onSave={save('notes')}
-          placeholder="Notes"
-          className="text-xs text-gray-400 truncate block"
-        />
+      <td className="px-3 py-2 max-w-[180px]">
+        <InlineText value={task.notes ?? ''} onSave={save('notes')} placeholder="—" />
       </td>
 
       {/* Delete */}
       <td className="px-3 py-2">
         <button
           onClick={() => confirm(`Delete "${task.name}"?`) && onDelete(task.id)}
-          className="text-gray-200 dark:text-gray-700 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all text-xs px-1"
+          className="nd-btn-ghost opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ color: 'var(--nd-accent)', fontSize: 11, padding: '2px 6px' }}
         >
-          ✕
+          [X]
         </button>
       </td>
     </tr>

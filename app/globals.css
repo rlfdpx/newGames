@@ -1,26 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Doto:ROND,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
+/* Nothing Design System — tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --nd-bg:              #000000;
+  --nd-surface:         #111111;
+  --nd-surface-raised:  #1A1A1A;
+  --nd-border:          #222222;
+  --nd-border-vis:      #333333;
+  --nd-text-disabled:   #666666;
+  --nd-text-secondary:  #999999;
+  --nd-text-primary:    #E8E8E8;
+  --nd-text-display:    #FFFFFF;
+  --nd-accent:          #D71921;
+  --nd-accent-subtle:   rgba(215,25,33,0.15);
+  --nd-success:         #4A9E5C;
+  --nd-warning:         #D4A843;
+  --nd-interactive:     #5B9BF6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --nd-bg:             #F5F5F5;
+    --nd-surface:        #FFFFFF;
+    --nd-surface-raised: #F0F0F0;
+    --nd-border:         #E8E8E8;
+    --nd-border-vis:     #CCCCCC;
+    --nd-text-disabled:  #999999;
+    --nd-text-secondary: #666666;
+    --nd-text-primary:   #1A1A1A;
+    --nd-text-display:   #000000;
+    --nd-interactive:    #007AFF;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--nd-bg);
+  color: var(--nd-text-primary);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reusable Nothing utility classes */
+.nd-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nd-text-secondary);
+}
+
+.nd-mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.nd-doto {
+  font-family: 'Doto', 'Space Mono', monospace;
+}
+
+.nd-card {
+  background: var(--nd-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: 12px;
+}
+
+.nd-card:hover {
+  border-color: var(--nd-border-vis);
+}
+
+.nd-input {
+  background: var(--nd-surface-raised);
+  border: 1px solid var(--nd-border-vis);
+  border-radius: 4px;
+  color: var(--nd-text-primary);
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 150ms;
+}
+
+.nd-input:focus {
+  border-color: var(--nd-text-primary);
+}
+
+.nd-input::placeholder {
+  color: var(--nd-text-disabled);
+}
+
+.nd-btn-primary {
+  background: var(--nd-text-display);
+  color: var(--nd-bg);
+  border: none;
+  border-radius: 999px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: opacity 150ms;
+  white-space: nowrap;
+}
+
+.nd-btn-primary:hover { opacity: 0.85; }
+.nd-btn-primary:disabled { opacity: 0.4; }
+
+.nd-btn-secondary {
+  background: transparent;
+  color: var(--nd-text-primary);
+  border: 1px solid var(--nd-border-vis);
+  border-radius: 999px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+  white-space: nowrap;
+}
+
+.nd-btn-secondary:hover {
+  border-color: var(--nd-text-primary);
+  color: var(--nd-text-display);
+}
+
+.nd-btn-ghost {
+  background: transparent;
+  color: var(--nd-text-secondary);
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 150ms;
+}
+
+.nd-btn-ghost:hover { color: var(--nd-text-display); }
+
+.nd-btn-destructive {
+  background: transparent;
+  color: var(--nd-accent);
+  border: 1px solid var(--nd-accent);
+  border-radius: 999px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.nd-btn-destructive:hover { background: var(--nd-accent-subtle); }
+
+/* Dot grid background motif */
+.nd-dot-grid {
+  background-image: radial-gradient(circle, var(--nd-border-vis) 1px, transparent 1px);
+  background-size: 16px 16px;
 }

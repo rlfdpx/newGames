@@ -1,19 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { TaskRow as TRow } from '@/lib/supabaseClient'
-import { GameRow } from '@/lib/supabaseClient'
+import { TaskRow as TRow, GameRow } from '@/lib/supabaseClient'
 import { CATEGORIES } from '@/lib/taskTemplate'
 import TaskRow from './TaskRow'
 
 export default function TaskBoard({
-  tasks,
-  gameId,
-  allGames,
-  onUpdate,
-  onAdd,
-  onAddToAll,
-  onDelete,
+  tasks, gameId, allGames, onUpdate, onAdd, onAddToAll, onDelete,
 }: {
   tasks: TRow[]
   gameId: string
@@ -28,24 +21,16 @@ export default function TaskBoard({
   const [adding, setAdding] = useState(false)
 
   const byCategory = CATEGORIES.reduce<Record<string, TRow[]>>((acc, cat) => {
-    acc[cat] = tasks.filter((t) => t.category === cat).sort((a, b) => a.sort_order - b.sort_order)
+    acc[cat] = tasks.filter(t => t.category === cat).sort((a, b) => a.sort_order - b.sort_order)
     return acc
   }, {})
-
-  const extraCats = [...new Set(tasks.map((t) => t.category))].filter((c) => !CATEGORIES.includes(c))
-  extraCats.forEach((c) => { byCategory[c] = tasks.filter((t) => t.category === c) })
-
+  const extraCats = [...new Set(tasks.map(t => t.category))].filter(c => !CATEGORIES.includes(c))
+  extraCats.forEach(c => { byCategory[c] = tasks.filter(t => t.category === c) })
   const allCats = [...CATEGORIES, ...extraCats]
 
   const baseTask = (category: string) => ({
-    category,
-    name: newName.trim(),
-    status: 'Not Started' as const,
-    assignee: null,
-    start_date: null,
-    end_date: null,
-    priority: null,
-    notes: null,
+    category, name: newName.trim(), status: 'Not Started' as const,
+    assignee: null, start_date: null, end_date: null, priority: null, notes: null,
     sort_order: (byCategory[category]?.length ?? 0) + 100,
   })
 
@@ -53,90 +38,99 @@ export default function TaskBoard({
     if (!newName.trim()) return
     setAdding(true)
     try {
-      if (scope === 'all') {
-        await onAddToAll(baseTask(category), allGames)
-      } else {
-        await onAdd({ ...baseTask(category), game_id: gameId })
-      }
-      setNewName('')
-      setAddingIn(null)
-    } finally {
-      setAdding(false)
-    }
+      if (scope === 'all') await onAddToAll(baseTask(category), allGames)
+      else await onAdd({ ...baseTask(category), game_id: gameId })
+      setNewName(''); setAddingIn(null)
+    } finally { setAdding(false) }
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {allCats.map((cat) => {
+    <div className="flex flex-col gap-4">
+      {allCats.map(cat => {
         const catTasks = byCategory[cat] ?? []
-        const done = catTasks.filter((t) => t.status === 'Completed').length
+        const done = catTasks.filter(t => t.status === 'Completed').length
 
         return (
-          <div key={cat} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+          <div
+            key={cat}
+            style={{
+              border: '1px solid var(--nd-border)',
+              borderRadius: 12,
+              overflow: 'hidden',
+              background: 'var(--nd-surface)',
+            }}
+          >
             {/* Category header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-              <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm">{cat}</h3>
-              <span className="text-xs text-gray-400">{done}/{catTasks.length} done</span>
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: '1px solid var(--nd-border)', background: 'var(--nd-surface-raised)' }}
+            >
+              <span className="nd-label" style={{ fontSize: 11 }}>{cat}</span>
+              <span className="nd-mono" style={{ fontSize: 11, color: 'var(--nd-text-secondary)' }}>
+                {done}/{catTasks.length}
+              </span>
             </div>
 
             {/* Task table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="text-xs text-gray-400 border-b border-gray-100 dark:border-gray-800">
-                    <th className="px-3 py-2">Task</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">Assignee</th>
-                    <th className="px-3 py-2">Priority</th>
-                    <th className="px-3 py-2">Start</th>
-                    <th className="px-3 py-2">End</th>
-                    <th className="px-3 py-2">Notes</th>
-                    <th className="px-3 py-2"></th>
+                  <tr style={{ borderBottom: '1px solid var(--nd-border)' }}>
+                    {['Task', 'Status', 'Assignee', 'Priority', 'Start', 'End', 'Notes', ''].map(h => (
+                      <th key={h} className="px-3 py-2 text-left nd-label" style={{ fontWeight: 400, fontSize: 10 }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {catTasks.map((t) => (
+                  {catTasks.map(t => (
                     <TaskRow key={t.id} task={t} onUpdate={onUpdate} onDelete={onDelete} />
                   ))}
                 </tbody>
               </table>
             </div>
 
-            {/* Add task inline */}
-            <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
+            {/* Add task */}
+            <div className="px-4 py-2" style={{ borderTop: '1px solid var(--nd-border)' }}>
               {addingIn === cat ? (
                 <div className="flex flex-wrap gap-2 items-center">
                   <input
                     autoFocus
                     value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(cat, 'game'); if (e.key === 'Escape') setAddingIn(null) }}
-                    placeholder="Task name…"
-                    className="flex-1 min-w-[180px] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={e => setNewName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAdd(cat, 'game'); if (e.key === 'Escape') setAddingIn(null) }}
+                    placeholder="TASK NAME..."
+                    style={{
+                      flex: 1, minWidth: 160,
+                      background: 'var(--nd-surface-raised)',
+                      border: '1px solid var(--nd-border-vis)',
+                      borderRadius: 4,
+                      color: 'var(--nd-text-primary)',
+                      fontFamily: 'Space Mono, monospace',
+                      fontSize: 12, padding: '6px 10px', outline: 'none',
+                      textTransform: 'uppercase',
+                    }}
                   />
-                  <button
-                    disabled={adding}
-                    onClick={() => handleAdd(cat, 'game')}
-                    className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
-                  >
-                    This game
+                  <button disabled={adding} onClick={() => handleAdd(cat, 'game')} className="nd-btn-primary" style={{ fontSize: 11, padding: '6px 14px' }}>
+                    This Game
                   </button>
                   <button
                     disabled={adding}
                     onClick={() => handleAdd(cat, 'all')}
+                    className="nd-btn-secondary"
+                    style={{ fontSize: 11, padding: '6px 14px', borderColor: 'var(--nd-interactive)', color: 'var(--nd-interactive)' }}
                     title={`Add to all ${allGames.length} games`}
-                    className="text-sm bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 whitespace-nowrap"
                   >
-                    All games ({allGames.length})
+                    All ({allGames.length})
                   </button>
-                  <button onClick={() => setAddingIn(null)} className="text-sm text-gray-400 hover:text-gray-600 px-2">Cancel</button>
+                  <button className="nd-btn-ghost" onClick={() => setAddingIn(null)}>[X]</button>
                 </div>
               ) : (
                 <button
+                  className="nd-btn-ghost"
+                  style={{ fontSize: 11, padding: '4px 0' }}
                   onClick={() => { setAddingIn(cat); setNewName('') }}
-                  className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
                 >
-                  + Add task
+                  + Add Task
                 </button>
               )}
             </div>

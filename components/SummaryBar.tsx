@@ -2,59 +2,59 @@
 
 import { GameWithStats } from '@/lib/derive'
 
-const STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
-
 export default function SummaryBar({ games }: { games: GameWithStats[] }) {
-  const releasing30 = games.filter(
-    (g) => g.countdown !== null && g.countdown >= 0 && g.countdown <= 30
-  ).length
-  const overdue = games.filter((g) => g.countdownState === 'overdue').length
-  const totalTasks = games.reduce((s, g) => s + g.totalTasks, 0)
-  const completedTasks = games.reduce((s, g) => s + g.completedTasks, 0)
+  const releasing30 = games.filter(g => g.countdown !== null && g.countdown >= 0 && g.countdown <= 30).length
+  const overdue     = games.filter(g => g.countdownState === 'overdue').length
+  const inDev       = games.filter(g => g.overall_status === 'In Development').length
+  const inQA        = games.filter(g => g.overall_status === 'In QA').length
+  const totalTasks  = games.reduce((s, g) => s + g.totalTasks, 0)
+  const doneTasks   = games.reduce((s, g) => s + g.completedTasks, 0)
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-      <StatCard label="Total Games" value={games.length} color="blue" />
-      {STATUSES.slice(0, 2).map((s) => (
-        <StatCard
-          key={s}
-          label={s}
-          value={games.filter((g) => g.overall_status === s).length}
-          color={s === 'In QA' ? 'purple' : 'gray'}
-        />
-      ))}
-      <StatCard label="Releasing ≤30d" value={releasing30} color="amber" />
-      <StatCard label="Overdue" value={overdue} color="red" />
-      <StatCard
-        label="Tasks Done"
-        value={`${completedTasks}/${totalTasks}`}
-        color="green"
-      />
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px mb-8"
+      style={{ border: '1px solid var(--nd-border)', borderRadius: 12, overflow: 'hidden', background: 'var(--nd-border)' }}>
+
+      {/* Hero: total games — the Doto moment */}
+      <StatCell label="Total Games" accent>
+        <span className="nd-doto" style={{ fontSize: 48, lineHeight: 1, color: 'var(--nd-text-display)', letterSpacing: '-0.02em' }}>
+          {games.length}
+        </span>
+      </StatCell>
+
+      <StatCell label="In Dev">
+        <span className="nd-mono" style={{ fontSize: 32, color: 'var(--nd-text-primary)' }}>{inDev}</span>
+      </StatCell>
+
+      <StatCell label="In QA">
+        <span className="nd-mono" style={{ fontSize: 32, color: 'var(--nd-text-primary)' }}>{inQA}</span>
+      </StatCell>
+
+      <StatCell label="Releasing ≤30d">
+        <span className="nd-mono" style={{ fontSize: 32, color: releasing30 > 0 ? 'var(--nd-warning)' : 'var(--nd-text-primary)' }}>
+          {releasing30}
+        </span>
+      </StatCell>
+
+      <StatCell label="Overdue">
+        <span className="nd-mono" style={{ fontSize: 32, color: overdue > 0 ? 'var(--nd-accent)' : 'var(--nd-text-primary)' }}>
+          {overdue}
+        </span>
+      </StatCell>
+
+      <StatCell label="Tasks Done">
+        <span className="nd-mono" style={{ fontSize: 24, color: 'var(--nd-success)' }}>{doneTasks}</span>
+        <span className="nd-label" style={{ marginTop: 2 }}>/ {totalTasks}</span>
+      </StatCell>
     </div>
   )
 }
 
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: string | number
-  color: string
-}) {
-  const colors: Record<string, string> = {
-    blue:   'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300',
-    gray:   'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300',
-    purple: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300',
-    amber:  'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300',
-    red:    'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300',
-    green:  'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300',
-  }
+function StatCell({ label, children, accent = false }: { label: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className={`rounded-xl border p-4 flex flex-col gap-1 ${colors[color]}`}>
-      <span className="text-2xl font-bold">{value}</span>
-      <span className="text-xs font-medium opacity-70">{label}</span>
+    <div className="flex flex-col gap-2 p-4"
+      style={{ background: accent ? 'var(--nd-surface-raised)' : 'var(--nd-surface)' }}>
+      <div className="nd-label">{label}</div>
+      <div className="flex flex-col">{children}</div>
     </div>
   )
 }

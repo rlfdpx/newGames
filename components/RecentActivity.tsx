@@ -69,7 +69,7 @@ export default function RecentActivity({ tasks, games }: { tasks: TaskRow[]; gam
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  fontFamily: 'Space Grotesk',
+                  fontFamily: 'var(--font-space-grotesk)',
                 }}
               >
                 {task.name}

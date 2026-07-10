@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Doto:ROND,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 /* Nothing Design System — tokens */
@@ -37,13 +36,13 @@
 body {
   background-color: var(--nd-bg);
   color: var(--nd-text-primary);
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Reusable Nothing utility classes */
 .nd-label {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -51,11 +50,11 @@ body {
 }
 
 .nd-mono {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
 }
 
 .nd-doto {
-  font-family: 'Doto', 'Space Mono', monospace;
+  font-family: 'Doto', var(--font-space-mono), monospace;
 }
 
 .nd-card {
@@ -73,7 +72,7 @@ body {
   border: 1px solid var(--nd-border-vis);
   border-radius: 4px;
   color: var(--nd-text-primary);
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 13px;
   padding: 10px 14px;
   width: 100%;
@@ -94,7 +93,7 @@ body {
   color: var(--nd-bg);
   border: none;
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -112,7 +111,7 @@ body {
   color: var(--nd-text-primary);
   border: 1px solid var(--nd-border-vis);
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -131,7 +130,7 @@ body {
   background: transparent;
   color: var(--nd-text-secondary);
   border: none;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -147,7 +146,7 @@ body {
   color: var(--nd-accent);
   border: 1px solid var(--nd-accent);
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;

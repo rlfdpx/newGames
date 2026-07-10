@@ -156,7 +156,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
               padding: '12px 16px',
               fontSize: 14,
               color: 'var(--nd-text-secondary)',
-              fontFamily: 'Space Grotesk',
+              fontFamily: 'var(--font-space-grotesk)',
             }}
           >
             {game.notes}

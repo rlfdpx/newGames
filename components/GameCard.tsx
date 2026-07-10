@@ -73,7 +73,7 @@ export default function GameCard({
       {/* Header */}
       <div className="flex flex-col gap-1">
         <div className="nd-label" style={{ color: 'var(--nd-text-disabled)' }}>{game.game_name}</div>
-        <div style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 500, color: 'var(--nd-text-display)', lineHeight: 1.2 }}>
+        <div style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 20, fontWeight: 500, color: 'var(--nd-text-display)', lineHeight: 1.2 }}>
           {game.code_name || game.game_name}
         </div>
         {/* Status pill */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { GameRow } from '@/lib/supabaseClient'
 
 const STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
@@ -35,19 +35,18 @@ export default function GameForm({
   onSave: (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
   onCancel: () => void
 }) {
-  const [form, setForm] = useState<FormData>({
+  // GameForm is remounted each time it's opened (see app/page.tsx and
+  // app/game/[id]/page.tsx, which conditionally render it), so it's safe to
+  // seed state directly from `initial` here instead of syncing via an effect.
+  const [form, setForm] = useState<FormData>(() => initial ? {
+    game_name: initial.game_name, code_name: initial.code_name ?? '',
+    overall_status: initial.overall_status, release_date: initial.release_date ?? '',
+    notes: initial.notes ?? '', sort_order: initial.sort_order,
+  } : {
     game_name: '', code_name: '', overall_status: 'In Development',
     release_date: '', notes: '', sort_order: 0,
   })
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    if (initial) setForm({
-      game_name: initial.game_name, code_name: initial.code_name ?? '',
-      overall_status: initial.overall_status, release_date: initial.release_date ?? '',
-      notes: initial.notes ?? '', sort_order: initial.sort_order,
-    })
-  }, [initial])
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>

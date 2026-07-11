@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { TaskRow as TRow } from '@/lib/supabaseClient'
 import { isTaskOverdue } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'

@@ -54,7 +54,7 @@ body {
 }
 
 .nd-doto {
-  font-family: 'Doto', var(--font-space-mono), monospace;
+  font-family: var(--font-doto), var(--font-space-mono), monospace;
 }
 
 .nd-card {

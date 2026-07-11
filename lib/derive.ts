@@ -49,7 +49,9 @@ export function countdownLabel(g: GameWithStats): string {
   if (g.countdown === null) return '—'
   if (g.countdown === 0) return 'Today'
   if (g.countdown > 0) return `In ${g.countdown} day${g.countdown === 1 ? '' : 's'}`
-  return `Overdue by ${Math.abs(g.countdown)} day${Math.abs(g.countdown) === 1 ? '' : 's'}`
+  const daysAgo = Math.abs(g.countdown)
+  if (g.overall_status === 'Released') return `Released ${daysAgo}d ago`
+  return `Overdue by ${daysAgo} day${daysAgo === 1 ? '' : 's'}`
 }
 
 export function isTaskOverdue(task: TaskRow): boolean {

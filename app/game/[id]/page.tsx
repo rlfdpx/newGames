@@ -5,10 +5,13 @@ import Link from 'next/link'
 import { useGames } from '@/lib/useGames'
 import { deriveGame, countdownLabel } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
-import { TaskRow, GameRow } from '@/lib/supabaseClient'
+import { GameRow } from '@/lib/supabaseClient'
 import TaskBoard from '@/components/TaskBoard'
 import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
+import ErrorBanner from '@/components/ErrorBanner'
+
+const TASK_STATUSES = ['Not Started', 'In Progress', 'Completed']
 
 const STATUS_COLOR: Record<string, string> = {
   'In Development': 'var(--nd-interactive)',
@@ -37,7 +40,7 @@ function SegmentedBar({ completed, inProgress, total }: { completed: number; inP
 
 export default function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { games, tasks, loading, updateGame, updateTask, addTask, addTaskToAllGames, deleteTask } = useGames()
+  const { games, tasks, loading, error, clearError, updateGame, updateTask, addTask, addTaskToAllGames, deleteTask } = useGames()
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
   const [editing, setEditing] = useState(false)
 
@@ -80,6 +83,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--nd-bg)' }}>
+      <ErrorBanner message={error} onDismiss={clearError} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Back */}
@@ -166,7 +170,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           </div>
         )}
 
-        <FilterBar filters={filters} assignees={assignees} onChange={setFilters} />
+        <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={TASK_STATUSES} />
 
         <TaskBoard
           tasks={filteredTasks}
@@ -183,7 +187,9 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
         <GameForm
           initial={game}
           onSave={async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
-            await updateGame(game.id, data); setEditing(false)
+            try { await updateGame(game.id, data); setEditing(false) } catch {
+              // Error is already surfaced via the useGames() error banner.
+            }
           }}
           onCancel={() => setEditing(false)}
         />

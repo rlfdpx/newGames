@@ -1,7 +1,5 @@
 'use client'
 
-const STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
-
 export type Filters = {
   status: string
   assignee: string
@@ -26,10 +24,12 @@ export default function FilterBar({
   filters,
   assignees,
   onChange,
+  statusOptions,
 }: {
   filters: Filters
   assignees: string[]
   onChange: (f: Filters) => void
+  statusOptions: string[]
 }) {
   const set = (key: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...filters, [key]: e.target.value })
@@ -54,7 +54,7 @@ export default function FilterBar({
 
       <select value={filters.status} onChange={set('status')} style={SELECT_STYLE}>
         <option value="">ALL STATUS</option>
-        {STATUSES.map((s) => <option key={s}>{s}</option>)}
+        {statusOptions.map((s) => <option key={s}>{s}</option>)}
       </select>
 
       <select value={filters.assignee} onChange={set('assignee')} style={SELECT_STYLE}>

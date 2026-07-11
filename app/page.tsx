@@ -9,9 +9,12 @@ import GameCard from '@/components/GameCard'
 import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
 import RecentActivity from '@/components/RecentActivity'
+import ErrorBanner from '@/components/ErrorBanner'
+
+const GAME_STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
 
 export default function Home() {
-  const { games, tasks, loading, addGame, updateGame, deleteGame } = useGames()
+  const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame } = useGames()
   const [showForm, setShowForm] = useState(false)
   const [editGame, setEditGame] = useState<GameWithStats | null>(null)
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
@@ -36,18 +39,24 @@ export default function Home() {
     return derived.filter(g => {
       if (filters.status && g.overall_status !== filters.status) return false
       if (filters.assignee && !tasks.some(t => t.game_id === g.id && t.assignee === filters.assignee)) return false
+      if (filters.priority && !tasks.some(t => t.game_id === g.id && t.status !== 'Completed' && t.priority === filters.priority)) return false
       if (s && !g.game_name.toLowerCase().includes(s) && !(g.code_name ?? '').toLowerCase().includes(s)) return false
       return true
     })
   }, [derived, filters, tasks])
 
   const handleSave = async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
-    if (editGame) { await updateGame(editGame.id, data); setEditGame(null) }
-    else { await addGame(data); setShowForm(false) }
+    try {
+      if (editGame) { await updateGame(editGame.id, data); setEditGame(null) }
+      else { await addGame(data); setShowForm(false) }
+    } catch {
+      // Error is already surfaced via the useGames() error banner.
+    }
   }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--nd-bg)' }}>
+      <ErrorBanner message={error} onDismiss={clearError} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Header */}
@@ -78,7 +87,7 @@ export default function Home() {
           <>
             <SummaryBar games={derived} />
             <RecentActivity tasks={tasks} games={games} />
-            <FilterBar filters={filters} assignees={assignees} onChange={setFilters} />
+            <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={GAME_STATUSES} />
 
             {filtered.length === 0 ? (
               <div className="text-center py-24">

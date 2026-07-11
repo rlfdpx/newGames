@@ -10,10 +10,11 @@ import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
 import RecentActivity from '@/components/RecentActivity'
 import ErrorBanner from '@/components/ErrorBanner'
-import { GAME_STATUSES } from '@/lib/constants'
+import TaskResults from '@/components/TaskResults'
+import { TASK_STATUSES } from '@/lib/constants'
 
 export default function Home() {
-  const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame } = useGames()
+  const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame, updateTask, deleteTask } = useGames()
   const [showForm, setShowForm] = useState(false)
   const [editGame, setEditGame] = useState<GameWithStats | null>(null)
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
@@ -33,16 +34,24 @@ export default function Home() {
     return ids
   }, [tasks, games])
 
-  const filtered = useMemo(() => {
+  // Any active filter switches the view from game cards to matching tasks grouped by game
+  const hasActiveFilters = Boolean(filters.status || filters.assignee || filters.priority || filters.search)
+
+  const filteredTasks = useMemo(() => {
     const s = filters.search.toLowerCase()
-    return derived.filter(g => {
-      if (filters.status && g.overall_status !== filters.status) return false
-      if (filters.assignee && !tasks.some(t => t.game_id === g.id && t.assignee === filters.assignee)) return false
-      if (filters.priority && !tasks.some(t => t.game_id === g.id && t.status !== 'Completed' && t.priority === filters.priority)) return false
-      if (s && !g.game_name.toLowerCase().includes(s) && !(g.code_name ?? '').toLowerCase().includes(s)) return false
+    const gameById = new Map(games.map(g => [g.id, g]))
+    return tasks.filter(t => {
+      if (filters.status && t.status !== filters.status) return false
+      if (filters.assignee && t.assignee !== filters.assignee) return false
+      if (filters.priority && t.priority !== filters.priority) return false
+      if (s) {
+        const g = gameById.get(t.game_id)
+        const haystack = [t.name, t.notes ?? '', g?.game_name ?? '', g?.code_name ?? ''].join(' ').toLowerCase()
+        if (!haystack.includes(s)) return false
+      }
       return true
     })
-  }, [derived, filters, tasks])
+  }, [tasks, games, filters])
 
   const handleSave = async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
     try {
@@ -86,17 +95,19 @@ export default function Home() {
           <>
             <SummaryBar games={derived} />
             <RecentActivity tasks={tasks} games={games} />
-            <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={GAME_STATUSES} />
+            <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={TASK_STATUSES} />
 
-            {filtered.length === 0 ? (
+            {hasActiveFilters ? (
+              <TaskResults games={games} tasks={filteredTasks} onUpdate={updateTask} onDelete={deleteTask} />
+            ) : derived.length === 0 ? (
               <div className="text-center py-24">
                 <div className="nd-mono" style={{ color: 'var(--nd-text-disabled)', fontSize: 13 }}>
-                  {derived.length === 0 ? '[ No games yet ]' : '[ No matches ]'}
+                  [ No games yet ]
                 </div>
               </div>
             ) : (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map(g => (
+                {derived.map(g => (
                   <GameCard
                     key={g.id}
                     game={g}

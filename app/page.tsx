@@ -10,8 +10,7 @@ import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
 import RecentActivity from '@/components/RecentActivity'
 import ErrorBanner from '@/components/ErrorBanner'
-
-const GAME_STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
+import { GAME_STATUSES } from '@/lib/constants'
 
 export default function Home() {
   const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame } = useGames()

@@ -1,5 +1,7 @@
 'use client'
 
+import { TASK_PRIORITIES } from '@/lib/constants'
+
 export type Filters = {
   status: string
   assignee: string
@@ -64,9 +66,7 @@ export default function FilterBar({
 
       <select value={filters.priority} onChange={set('priority')} style={SELECT_STYLE}>
         <option value="">ALL PRIORITY</option>
-        <option>High</option>
-        <option>Medium</option>
-        <option>Low</option>
+        {TASK_PRIORITIES.map((p) => <option key={p}>{p}</option>)}
       </select>
 
       {hasFilters && (

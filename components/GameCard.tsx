@@ -3,14 +3,7 @@
 import Link from 'next/link'
 import { GameWithStats, countdownLabel } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
-
-const STATUS_COLORS: Record<string, string> = {
-  'In Development': 'var(--nd-interactive)',
-  'In QA':          'var(--nd-warning)',
-  'Released':       'var(--nd-success)',
-  'On Hold':        'var(--nd-text-disabled)',
-  'Cancelled':      'var(--nd-accent)',
-}
+import { GAME_STATUS_COLORS } from '@/lib/constants'
 
 const COUNTDOWN_COLORS: Record<string, string> = {
   overdue: 'var(--nd-accent)',
@@ -52,7 +45,7 @@ export default function GameCard({
   onEdit: (g: GameWithStats) => void
   onDelete: (id: string) => void
 }) {
-  const statusColor = STATUS_COLORS[game.overall_status] ?? 'var(--nd-text-disabled)'
+  const statusColor = GAME_STATUS_COLORS[game.overall_status] ?? 'var(--nd-text-disabled)'
   const cdColor = COUNTDOWN_COLORS[game.countdownState]
 
   return (

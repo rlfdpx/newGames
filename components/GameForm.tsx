@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { GameRow } from '@/lib/supabaseClient'
-
-const STATUSES = ['In Development', 'In QA', 'Released', 'On Hold', 'Cancelled']
+import { GAME_STATUSES } from '@/lib/constants'
 
 type FormData = {
   game_name: string
@@ -99,7 +98,7 @@ export default function GameForm({
           </Field>
           <Field label="Status">
             <select value={form.overall_status} onChange={set('overall_status')} style={FIELD_STYLE}>
-              {STATUSES.map(s => <option key={s}>{s}</option>)}
+              {GAME_STATUSES.map(s => <option key={s}>{s}</option>)}
             </select>
           </Field>
           <Field label="Release Date">

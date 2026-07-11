@@ -56,3 +56,23 @@ create policy "public games" on games for all using (true) with check (true);
 
 drop policy if exists "public tasks" on tasks;
 create policy "public tasks" on tasks for all using (true) with check (true);
+
+-- Realtime: add games/tasks to the supabase_realtime publication so the
+-- postgres_changes subscriptions in lib/useGames.ts actually fire.
+-- Idempotent — safe to re-run; skips tables already in the publication.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'games'
+  ) then
+    alter publication supabase_realtime add table games;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'tasks'
+  ) then
+    alter publication supabase_realtime add table tasks;
+  end if;
+end $$;

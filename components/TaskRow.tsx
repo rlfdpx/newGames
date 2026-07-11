@@ -4,21 +4,12 @@ import { useState } from 'react'
 import { TaskRow as TRow } from '@/lib/supabaseClient'
 import { isTaskOverdue } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
-
-const STATUS_OPTIONS  = ['Not Started', 'In Progress', 'Completed']
-const PRIORITY_OPTIONS = ['', 'High', 'Medium', 'Low']
-
-const STATUS_COLOR: Record<string, string> = {
-  'Completed':   'var(--nd-success)',
-  'In Progress': 'var(--nd-warning)',
-  'Not Started': 'var(--nd-text-disabled)',
-}
-
-const PRIORITY_COLOR: Record<string, string> = {
-  High:   'var(--nd-accent)',
-  Medium: 'var(--nd-warning)',
-  Low:    'var(--nd-text-disabled)',
-}
+import {
+  TASK_STATUSES as STATUS_OPTIONS,
+  TASK_PRIORITY_OPTIONS as PRIORITY_OPTIONS,
+  TASK_STATUS_COLORS as STATUS_COLOR,
+  TASK_PRIORITY_COLORS as PRIORITY_COLOR,
+} from '@/lib/constants'
 
 function InlineText({
   value, onSave, placeholder = '—', type = 'text',

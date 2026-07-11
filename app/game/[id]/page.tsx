@@ -10,16 +10,7 @@ import TaskBoard from '@/components/TaskBoard'
 import FilterBar, { Filters } from '@/components/FilterBar'
 import GameForm from '@/components/GameForm'
 import ErrorBanner from '@/components/ErrorBanner'
-
-const TASK_STATUSES = ['Not Started', 'In Progress', 'Completed']
-
-const STATUS_COLOR: Record<string, string> = {
-  'In Development': 'var(--nd-interactive)',
-  'In QA':          'var(--nd-warning)',
-  'Released':       'var(--nd-success)',
-  'On Hold':        'var(--nd-text-disabled)',
-  'Cancelled':      'var(--nd-accent)',
-}
+import { TASK_STATUSES, GAME_STATUS_COLORS } from '@/lib/constants'
 
 function SegmentedBar({ completed, inProgress, total }: { completed: number; inProgress: number; total: number }) {
   if (total === 0) return null
@@ -79,7 +70,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
     </div>
   )
 
-  const statusColor = STATUS_COLOR[game.overall_status] ?? 'var(--nd-text-disabled)'
+  const statusColor = GAME_STATUS_COLORS[game.overall_status] ?? 'var(--nd-text-disabled)'
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--nd-bg)' }}>

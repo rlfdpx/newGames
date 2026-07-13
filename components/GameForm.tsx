@@ -47,6 +47,7 @@ export default function GameForm({
   })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -54,13 +55,17 @@ export default function GameForm({
 
   const handleThumbnail = async (file: File) => {
     setUploading(true)
+    setUploadError(null)
     try {
       const ext = file.name.split('.').pop() ?? 'jpg'
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { data, error } = await supabase.storage
         .from('game-thumbnails')
         .upload(path, file, { upsert: true })
-      if (error) { console.error('Upload failed', error); return }
+      if (error) {
+        setUploadError(error.message)
+        return
+      }
       const { data: { publicUrl } } = supabase.storage
         .from('game-thumbnails')
         .getPublicUrl(data.path)
@@ -149,10 +154,10 @@ export default function GameForm({
             )}
             <label style={{
               display: 'block',
-              border: '1px dashed var(--nd-border-vis)',
+              border: `1px dashed ${uploadError ? 'var(--nd-accent)' : 'var(--nd-border-vis)'}`,
               borderRadius: 4,
               padding: '10px 14px',
-              cursor: 'pointer',
+              cursor: uploading ? 'default' : 'pointer',
               color: uploading ? 'var(--nd-text-disabled)' : 'var(--nd-text-secondary)',
               fontFamily: 'Space Mono, monospace',
               fontSize: 11,
@@ -168,6 +173,11 @@ export default function GameForm({
                 onChange={e => { if (e.target.files?.[0]) handleThumbnail(e.target.files[0]) }}
               />
             </label>
+            {uploadError && (
+              <div style={{ color: 'var(--nd-accent)', fontFamily: 'Space Mono, monospace', fontSize: 11, marginTop: 6 }}>
+                Upload failed: {uploadError}
+              </div>
+            )}
           </Field>
 
           <div className="flex gap-3 mt-2">

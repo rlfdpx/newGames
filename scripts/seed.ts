@@ -53,10 +53,11 @@ async function seedPortfolio() {
     release_date:   parseDMY(r[5]),
     notes:          r[6]?.trim() || null,
     sort_order:     i,
+    team:           'haiti',
   }))
 
-  // Clear existing data (tasks cascade-delete via FK)
-  await supabase.from('games').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // Clear only Haiti games (tasks cascade-delete via FK); other teams are untouched
+  await supabase.from('games').delete().eq('team', 'haiti')
 
   console.log(`Inserting ${games.length} games…`)
   const { data, error } = await supabase.from('games').insert(games).select()

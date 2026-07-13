@@ -123,7 +123,7 @@ export default function GameCard({
       {/* Actions */}
       <div className="flex gap-2 mt-auto pt-1">
         <Link
-          href={`/game/${game.id}`}
+          href={`/team/${game.team}/game/${game.id}`}
           className="nd-btn-primary flex-1 text-center"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: 11 }}
         >

@@ -1,134 +1,75 @@
-'use client'
+import Link from 'next/link'
 
-import { useState, useMemo } from 'react'
-import { useGames } from '@/lib/useGames'
-import { deriveGame, GameWithStats } from '@/lib/derive'
-import { GameRow } from '@/lib/supabaseClient'
-import SummaryBar from '@/components/SummaryBar'
-import GameCard from '@/components/GameCard'
-import FilterBar, { Filters } from '@/components/FilterBar'
-import GameForm from '@/components/GameForm'
-import RecentActivity from '@/components/RecentActivity'
-import ErrorBanner from '@/components/ErrorBanner'
-import TaskResults from '@/components/TaskResults'
-import { TASK_STATUSES } from '@/lib/constants'
+const TEAMS = [
+  { slug: 'haiti',   name: 'Haiti Lotomobil', label: 'HT' },
+  { slug: 'nigeria', name: 'Nigeria',          label: 'NG' },
+  { slug: 'ghana',   name: 'Ghana',            label: 'GH' },
+]
 
 export default function Home() {
-  const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame, updateTask, deleteTask } = useGames()
-  const [showForm, setShowForm] = useState(false)
-  const [editGame, setEditGame] = useState<GameWithStats | null>(null)
-  const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
-
-  const derived = useMemo(() => games.map(g => deriveGame(g, tasks)), [games, tasks])
-
-  const assignees = useMemo(() => {
-    const set = new Set(tasks.map(t => t.assignee).filter(Boolean) as string[])
-    return [...set].sort()
-  }, [tasks])
-
-  const modifiedTodayIds = useMemo(() => {
-    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0)
-    const ids = new Set<string>()
-    tasks.forEach(t => { if (new Date(t.updated_at) >= startOfToday) ids.add(t.game_id) })
-    games.forEach(g => { if (new Date(g.updated_at) >= startOfToday) ids.add(g.id) })
-    return ids
-  }, [tasks, games])
-
-  // Any active filter switches the view from game cards to matching tasks grouped by game
-  const hasActiveFilters = Boolean(filters.status || filters.assignee || filters.priority || filters.search)
-
-  const filteredTasks = useMemo(() => {
-    const s = filters.search.toLowerCase()
-    const gameById = new Map(games.map(g => [g.id, g]))
-    return tasks.filter(t => {
-      if (filters.status && t.status !== filters.status) return false
-      if (filters.assignee && t.assignee !== filters.assignee) return false
-      if (filters.priority && t.priority !== filters.priority) return false
-      if (s) {
-        const g = gameById.get(t.game_id)
-        const haystack = [t.name, t.notes ?? '', g?.game_name ?? '', g?.code_name ?? ''].join(' ').toLowerCase()
-        if (!haystack.includes(s)) return false
-      }
-      return true
-    })
-  }, [tasks, games, filters])
-
-  const handleSave = async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      if (editGame) { await updateGame(editGame.id, data); setEditGame(null) }
-      else { await addGame(data); setShowForm(false) }
-    } catch {
-      // Error is already surfaced via the useGames() error banner.
-    }
-  }
-
   return (
-    <div className="min-h-screen" style={{ background: 'var(--nd-bg)' }}>
-      <ErrorBanner message={error} onDismiss={clearError} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{ background: 'var(--nd-bg)' }}
+    >
+      <div className="w-full max-w-xl px-4">
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-10">
-          <div>
-            <h1 style={{
-              fontFamily: 'Space Grotesk, sans-serif',
-              fontSize: 28, fontWeight: 500,
-              color: 'var(--nd-text-display)',
-              letterSpacing: '-0.01em',
-            }}>
-              Games Launch Tracker HT
-            </h1>
-            <div className="nd-label mt-1" style={{ letterSpacing: '0.1em' }}>
-              Portfolio · Live
-            </div>
+        <div className="mb-12 text-center">
+          <div className="nd-label mb-3" style={{ letterSpacing: '0.15em', color: 'var(--nd-text-secondary)' }}>
+            GAMES LAUNCH TRACKER HT
           </div>
-          <button className="nd-btn-primary" onClick={() => setShowForm(true)}>
-            + New Game
-          </button>
+          <div
+            className="nd-doto"
+            style={{ fontSize: 64, lineHeight: 1, color: 'var(--nd-text-display)', letterSpacing: '-0.02em' }}
+          >
+            TEAMS
+          </div>
         </div>
 
-        {loading ? (
-          <div className="nd-mono text-center py-24" style={{ color: 'var(--nd-text-disabled)', fontSize: 13 }}>
-            [Loading...]
-          </div>
-        ) : (
-          <>
-            <SummaryBar games={derived} />
-            <RecentActivity tasks={tasks} games={games} />
-            <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={TASK_STATUSES} />
-
-            {hasActiveFilters ? (
-              <TaskResults games={games} tasks={filteredTasks} assignees={assignees} onUpdate={updateTask} onDelete={deleteTask} />
-            ) : derived.length === 0 ? (
-              <div className="text-center py-24">
-                <div className="nd-mono" style={{ color: 'var(--nd-text-disabled)', fontSize: 13 }}>
-                  [ No games yet ]
+        {/* Team cards */}
+        <div className="flex flex-col gap-3">
+          {TEAMS.map(t => (
+            <Link
+              key={t.slug}
+              href={`/team/${t.slug}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '20px 28px',
+                background: 'var(--nd-surface)',
+                border: '1px solid var(--nd-border)',
+                borderRadius: 12,
+                textDecoration: 'none',
+              }}
+            >
+              <div className="flex items-center gap-5">
+                <span
+                  className="nd-doto"
+                  style={{ fontSize: 36, lineHeight: 1, color: 'var(--nd-text-display)', letterSpacing: '-0.02em', minWidth: 48 }}
+                >
+                  {t.label}
+                </span>
+                <div>
+                  <div style={{
+                    fontFamily: 'var(--font-space-grotesk)',
+                    fontSize: 18, fontWeight: 500,
+                    color: 'var(--nd-text-display)',
+                  }}>
+                    {t.name}
+                  </div>
+                  <div className="nd-label mt-1" style={{ color: 'var(--nd-text-disabled)' }}>
+                    Games Launch Tracker
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {derived.map(g => (
-                  <GameCard
-                    key={g.id}
-                    game={g}
-                    modifiedToday={modifiedTodayIds.has(g.id)}
-                    onEdit={g => setEditGame(g)}
-                    onDelete={deleteGame}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              <span className="nd-mono" style={{ fontSize: 18, color: 'var(--nd-text-disabled)' }}>→</span>
+            </Link>
+          ))}
+        </div>
 
-      {(showForm || editGame) && (
-        <GameForm
-          initial={editGame}
-          onSave={handleSave}
-          onCancel={() => { setShowForm(false); setEditGame(null) }}
-        />
-      )}
+      </div>
     </div>
   )
 }

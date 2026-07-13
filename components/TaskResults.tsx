@@ -48,7 +48,7 @@ export default function TaskResults({
             style={{ borderBottom: '1px solid var(--nd-border)', background: 'var(--nd-surface-raised)' }}
           >
             <Link
-              href={`/game/${game.id}`}
+              href={`/team/${game.team}/game/${game.id}`}
               className="nd-label"
               style={{ fontSize: 11, color: 'var(--nd-interactive)', textDecoration: 'none' }}
             >

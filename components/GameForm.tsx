@@ -31,7 +31,7 @@ export default function GameForm({
   onCancel,
 }: {
   initial?: GameRow | null
-  onSave: (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  onSave: (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at' | 'team'>) => Promise<void>
   onCancel: () => void
 }) {
   // GameForm is remounted each time it's opened (see app/page.tsx and

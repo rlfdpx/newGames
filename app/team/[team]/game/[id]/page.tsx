@@ -29,9 +29,9 @@ function SegmentedBar({ completed, inProgress, total }: { completed: number; inP
   )
 }
 
-export default function GamePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const { games, tasks, loading, error, clearError, updateGame, updateTask, addTask, addTaskToAllGames, deleteTask } = useGames()
+export default function GamePage({ params }: { params: Promise<{ team: string; id: string }> }) {
+  const { team, id } = use(params)
+  const { games, tasks, loading, error, clearError, updateGame, updateTask, addTask, addTaskToAllGames, deleteTask } = useGames(team)
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
   const [editing, setEditing] = useState(false)
 
@@ -65,7 +65,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--nd-bg)' }}>
       <div className="text-center">
         <div className="nd-mono mb-4" style={{ color: 'var(--nd-text-disabled)' }}>[404 — Game not found]</div>
-        <Link href="/" className="nd-btn-ghost">[← Back]</Link>
+        <Link href={`/team/${team}`} className="nd-btn-ghost">[← Back]</Link>
       </div>
     </div>
   )
@@ -78,15 +78,14 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Back */}
-        <Link href="/" className="nd-btn-ghost" style={{ marginBottom: 24, display: 'inline-block', paddingLeft: 0 }}>
-          ← All Games
+        <Link href={`/team/${team}`} className="nd-btn-ghost" style={{ marginBottom: 24, display: 'inline-block', paddingLeft: 0 }}>
+          ← {team.charAt(0).toUpperCase() + team.slice(1)}
         </Link>
 
         {/* Hero header */}
         <div className="flex flex-wrap items-start justify-between gap-6 mb-8">
           <div>
             <div className="nd-label mb-1" style={{ color: 'var(--nd-text-disabled)' }}>{game.game_name}</div>
-            {/* The hero Doto moment */}
             <h1 className="nd-doto" style={{
               fontSize: 56, lineHeight: 1, color: 'var(--nd-text-display)',
               letterSpacing: '-0.02em', marginBottom: 12,
@@ -115,15 +114,13 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
           {/* Progress widget */}
           <div className="flex items-center gap-4">
-            <div
-              style={{
-                background: 'var(--nd-surface)',
-                border: '1px solid var(--nd-border)',
-                borderRadius: 12,
-                padding: '16px 20px',
-                minWidth: 180,
-              }}
-            >
+            <div style={{
+              background: 'var(--nd-surface)',
+              border: '1px solid var(--nd-border)',
+              borderRadius: 12,
+              padding: '16px 20px',
+              minWidth: 180,
+            }}>
               <div className="nd-label mb-2">Task Progress</div>
               <div className="nd-mono mb-3" style={{ fontSize: 24, color: 'var(--nd-text-display)' }}>
                 {derived.completedTasks}
@@ -145,18 +142,15 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
         {/* Notes */}
         {game.notes && (
-          <div
-            className="mb-6"
-            style={{
-              background: 'var(--nd-surface)',
-              border: '1px solid var(--nd-border)',
-              borderRadius: 8,
-              padding: '12px 16px',
-              fontSize: 14,
-              color: 'var(--nd-text-secondary)',
-              fontFamily: 'var(--font-space-grotesk)',
-            }}
-          >
+          <div className="mb-6" style={{
+            background: 'var(--nd-surface)',
+            border: '1px solid var(--nd-border)',
+            borderRadius: 8,
+            padding: '12px 16px',
+            fontSize: 14,
+            color: 'var(--nd-text-secondary)',
+            fontFamily: 'var(--font-space-grotesk)',
+          }}>
             {game.notes}
           </div>
         )}
@@ -178,9 +172,9 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
       {editing && (
         <GameForm
           initial={game}
-          onSave={async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
+          onSave={async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at' | 'team'>) => {
             try { await updateGame(game.id, data); setEditing(false) } catch {
-              // Error is already surfaced via the useGames() error banner.
+              // Error surfaced via ErrorBanner
             }
           }}
           onCancel={() => setEditing(false)}

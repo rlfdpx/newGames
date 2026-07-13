@@ -8,7 +8,7 @@ function describe(action: string, error: { message: string } | null): string {
   return `${action} failed: ${error?.message ?? 'Unknown error'}`
 }
 
-export function useGames() {
+export function useGames(team: string) {
   const [games, setGames] = useState<GameRow[]>([])
   const [tasks, setTasks] = useState<TaskRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -17,10 +17,12 @@ export function useGames() {
   const clearError = useCallback(() => setError(null), [])
 
   const loadAll = useCallback(async () => {
-    const [{ data: g, error: gErr }, { data: t, error: tErr }] = await Promise.all([
-      supabase.from('games').select('*').order('sort_order').order('created_at'),
-      supabase.from('tasks').select('*').order('sort_order'),
-    ])
+    const { data: g, error: gErr } = await supabase
+      .from('games').select('*').eq('team', team).order('sort_order').order('created_at')
+    const gameIds = (g ?? []).map((row) => row.id)
+    const { data: t, error: tErr } = gameIds.length > 0
+      ? await supabase.from('tasks').select('*').in('game_id', gameIds).order('sort_order')
+      : { data: [], error: null }
     if (gErr || tErr) setError(describe('Loading data', gErr ?? tErr))
     setGames(g ?? [])
     setTasks(t ?? [])
@@ -46,10 +48,10 @@ export function useGames() {
   }, [loadAll])
 
   // --- Games CRUD ---
-  const addGame = async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at'>) => {
+  const addGame = async (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at' | 'team'>) => {
     const { data: game, error: insertError } = await supabase
       .from('games')
-      .insert(data)
+      .insert({ ...data, team })
       .select()
       .single()
     if (insertError || !game) {

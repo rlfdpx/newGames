@@ -39,7 +39,7 @@ export default function RecentActivity({ tasks, games }: { tasks: TaskRow[]; gam
           return (
             <Link
               key={task.id}
-              href={`/game/${game.id}`}
+              href={`/team/${game.team}/game/${game.id}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',

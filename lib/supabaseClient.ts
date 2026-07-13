@@ -16,6 +16,7 @@ export type GameRow = {
   release_date: string | null
   notes: string | null
   sort_order: number
+  team: string
   created_at: string
   updated_at: string
 }

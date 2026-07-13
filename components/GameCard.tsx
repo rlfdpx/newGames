@@ -34,6 +34,39 @@ function SegmentedBar({ completed, inProgress, total }: { completed: number; inP
   )
 }
 
+// App-icon style thumbnail; falls back to a wireframe icon-grid placeholder
+function GameIcon({ url, alt }: { url: string | null; alt: string }) {
+  return (
+    <div
+      className="shrink-0"
+      style={{
+        width: 64, height: 64,
+        borderRadius: 14,
+        overflow: 'hidden',
+        border: '1px solid var(--nd-border-vis)',
+        background: 'var(--nd-surface-raised)',
+      }}
+    >
+      {url ? (
+        <img src={url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      ) : (
+        <svg viewBox="0 0 64 64" width="100%" height="100%" style={{ display: 'block' }} aria-hidden="true">
+          <g stroke="var(--nd-text-disabled)" strokeWidth="1" fill="none" opacity="0.6">
+            <rect x="7" y="7" width="50" height="50" rx="12" />
+            <circle cx="32" cy="32" r="25" />
+            <circle cx="32" cy="32" r="15" />
+            <circle cx="32" cy="32" r="7" />
+            <line x1="32" y1="3" x2="32" y2="61" />
+            <line x1="3" y1="32" x2="61" y2="32" />
+            <line x1="11" y1="11" x2="53" y2="53" />
+            <line x1="53" y1="11" x2="11" y2="53" />
+          </g>
+        </svg>
+      )}
+    </div>
+  )
+}
+
 export default function GameCard({
   game,
   modifiedToday = false,
@@ -50,28 +83,15 @@ export default function GameCard({
 
   return (
     <div
-      className="nd-card flex flex-col gap-4 transition-colors overflow-hidden"
+      className="nd-card flex flex-col p-5 gap-4 transition-colors"
       style={{ position: 'relative' }}
     >
-      {/* Thumbnail */}
-      {game.thumbnail_url && (
-        <div style={{ height: 130, margin: 0 }}>
-          <img
-            src={game.thumbnail_url}
-            alt={game.code_name ?? game.game_name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-4 px-5 pb-5" style={{ paddingTop: game.thumbnail_url ? 0 : 20 }}>
-
       {/* Today dot */}
       {modifiedToday && (
         <span
           title="Modified today"
           style={{
-            position: 'absolute', top: 14, right: 14,
+            position: 'absolute', top: 10, right: 10,
             width: 7, height: 7, borderRadius: '50%',
             background: 'var(--nd-success)',
             boxShadow: '0 0 6px var(--nd-success)',
@@ -80,27 +100,30 @@ export default function GameCard({
       )}
 
       {/* Header */}
-      <div className="flex flex-col gap-1">
-        <div className="nd-label" style={{ color: 'var(--nd-text-disabled)' }}>{game.game_name}</div>
-        <div style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 20, fontWeight: 500, color: 'var(--nd-text-display)', lineHeight: 1.2 }}>
-          {game.code_name || game.game_name}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
+          <div className="nd-label" style={{ color: 'var(--nd-text-disabled)' }}>{game.game_name}</div>
+          <div style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 20, fontWeight: 500, color: 'var(--nd-text-display)', lineHeight: 1.2 }}>
+            {game.code_name || game.game_name}
+          </div>
+          {/* Status pill */}
+          <div style={{ marginTop: 4 }}>
+            <span
+              className="nd-label"
+              style={{
+                display: 'inline-block',
+                border: `1px solid ${statusColor}`,
+                color: statusColor,
+                borderRadius: 999,
+                padding: '3px 10px',
+                fontSize: 10,
+              }}
+            >
+              {game.overall_status}
+            </span>
+          </div>
         </div>
-        {/* Status pill */}
-        <div style={{ marginTop: 4 }}>
-          <span
-            className="nd-label"
-            style={{
-              display: 'inline-block',
-              border: `1px solid ${statusColor}`,
-              color: statusColor,
-              borderRadius: 999,
-              padding: '3px 10px',
-              fontSize: 10,
-            }}
-          >
-            {game.overall_status}
-          </span>
-        </div>
+        <GameIcon url={game.thumbnail_url} alt={game.code_name ?? game.game_name} />
       </div>
 
       {/* Progress */}
@@ -153,8 +176,6 @@ export default function GameCard({
           Del
         </button>
       </div>
-
-      </div>{/* end inner padding wrapper */}
     </div>
   )
 }

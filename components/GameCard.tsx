@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { GameWithStats, countdownLabel } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
 import { GAME_STATUS_COLORS } from '@/lib/constants'
@@ -45,10 +46,11 @@ function GameIcon({ url, alt }: { url: string | null; alt: string }) {
         overflow: 'hidden',
         border: '1px solid var(--nd-border-vis)',
         background: 'var(--nd-surface-raised)',
+        position: 'relative',
       }}
     >
       {url ? (
-        <img src={url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <Image src={url} alt={alt} fill style={{ objectFit: 'cover' }} />
       ) : (
         <svg viewBox="0 0 64 64" width="100%" height="100%" style={{ display: 'block' }} aria-hidden="true">
           <g stroke="var(--nd-text-disabled)" strokeWidth="1" fill="none" opacity="0.6">

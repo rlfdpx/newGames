@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { GameRow } from '@/lib/supabaseClient'
 import { supabase } from '@/lib/supabaseClient'
 import { GAME_STATUSES } from '@/lib/constants'
@@ -133,11 +134,12 @@ export default function GameForm({
           </Field>
           <Field label="Thumbnail">
             {form.thumbnail_url && (
-              <div style={{ position: 'relative', marginBottom: 8 }}>
-                <img
+              <div style={{ position: 'relative', height: 120, marginBottom: 8, borderRadius: 4, overflow: 'hidden' }}>
+                <Image
                   src={form.thumbnail_url}
                   alt="Thumbnail preview"
-                  style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }}
+                  fill
+                  style={{ objectFit: 'cover' }}
                 />
                 <button
                   type="button"

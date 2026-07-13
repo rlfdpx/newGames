@@ -23,7 +23,10 @@ export function useTeamSettings(teamSlug: string) {
     if (data) setSettings(data)
   }, [teamSlug])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    async function fetchSettings() { await load() }
+    fetchSettings()
+  }, [load])
 
   const save = async (patch: Partial<Pick<TeamSettings, 'display_name' | 'description'>>) => {
     setSaving(true)
@@ -42,6 +45,7 @@ export function useAllTeamSettings(slugs: string[]) {
   const [all, setAll] = useState<Record<string, TeamSettings>>(DEFAULTS)
   const [saving, setSaving] = useState(false)
 
+  const slugsKey = slugs.join(',')
   const load = useCallback(async () => {
     const { data } = await supabase.from('team_settings').select('*').in('team_slug', slugs)
     if (data && data.length > 0) {
@@ -52,9 +56,12 @@ export function useAllTeamSettings(slugs: string[]) {
       })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slugs.join(',')])
+  }, [slugsKey])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    async function fetchAll() { await load() }
+    fetchAll()
+  }, [load])
 
   const save = async (teamSlug: string, patch: Partial<Pick<TeamSettings, 'display_name' | 'description'>>) => {
     const current = all[teamSlug] ?? DEFAULTS[teamSlug]

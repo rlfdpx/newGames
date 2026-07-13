@@ -20,8 +20,11 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('system')
 
   useEffect(() => {
-    const stored = localStorage.getItem('nd-theme')
-    if (stored === 'light' || stored === 'dark') setTheme(stored)
+    function init() {
+      const stored = localStorage.getItem('nd-theme')
+      if (stored === 'light' || stored === 'dark') setTheme(stored)
+    }
+    init()
   }, [])
 
   const toggle = () => {

@@ -27,7 +27,7 @@ export function useGames(team: string) {
     setGames(g ?? [])
     setTasks(t ?? [])
     setLoading(false)
-  }, [])
+  }, [team])
 
   useEffect(() => {
     // Wrapping the initial call in a locally-scoped function (rather than invoking

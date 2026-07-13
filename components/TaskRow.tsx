@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { TaskRow as TRow } from '@/lib/supabaseClient'
 import { isTaskOverdue } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
@@ -16,7 +16,8 @@ function InlineText({
 }: { value: string; onSave: (v: string) => void; placeholder?: string; type?: 'text' | 'date'; suggestions?: string[] }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
-  const listId = suggestions ? `dl-${Math.random().toString(36).slice(2)}` : undefined
+  const uid = useId()
+  const listId = suggestions ? `dl-${uid}` : undefined
 
   const commit = () => { setEditing(false); if (draft !== value) onSave(draft) }
 

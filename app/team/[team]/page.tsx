@@ -3,6 +3,7 @@
 import { use, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useGames } from '@/lib/useGames'
+import { useTeamSettings } from '@/lib/useTeamSettings'
 import { deriveGame, GameWithStats } from '@/lib/derive'
 import { GameRow } from '@/lib/supabaseClient'
 import SummaryBar from '@/components/SummaryBar'
@@ -12,17 +13,13 @@ import GameForm from '@/components/GameForm'
 import RecentActivity from '@/components/RecentActivity'
 import ErrorBanner from '@/components/ErrorBanner'
 import TaskResults from '@/components/TaskResults'
+import ThemeToggle from '@/components/ThemeToggle'
 import { TASK_STATUSES } from '@/lib/constants'
-
-const TEAM_NAMES: Record<string, string> = {
-  haiti:   'Haiti Lotomobil',
-  nigeria: 'Nigeria',
-  ghana:   'Ghana',
-}
 
 export default function TeamPage({ params }: { params: Promise<{ team: string }> }) {
   const { team } = use(params)
   const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame, updateTask, deleteTask } = useGames(team)
+  const { settings: teamSettings } = useTeamSettings(team)
   const [showForm, setShowForm] = useState(false)
   const [editGame, setEditGame] = useState<GameWithStats | null>(null)
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
@@ -86,13 +83,21 @@ export default function TeamPage({ params }: { params: Promise<{ team: string }>
               color: 'var(--nd-text-display)',
               letterSpacing: '-0.01em',
             }}>
-              {TEAM_NAMES[team] ?? team}
+              {teamSettings.display_name}
             </h1>
+            {teamSettings.description && (
+              <div style={{ fontSize: 14, color: 'var(--nd-text-secondary)', marginTop: 4, fontFamily: 'var(--font-space-grotesk)' }}>
+                {teamSettings.description}
+              </div>
+            )}
             <div className="nd-label mt-1" style={{ letterSpacing: '0.1em' }}>Portfolio · Live</div>
           </div>
-          <button className="nd-btn-primary" onClick={() => setShowForm(true)}>
-            + New Game
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button className="nd-btn-primary" onClick={() => setShowForm(true)}>
+              + New Game
+            </button>
+          </div>
         </div>
 
         {loading ? (

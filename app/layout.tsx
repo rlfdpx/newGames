@@ -33,6 +33,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`h-full ${spaceGrotesk.variable} ${spaceMono.variable} ${doto.variable}`}>
+      <head>
+        {/* Restore saved theme before first paint to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: `try{const t=localStorage.getItem('nd-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}` }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

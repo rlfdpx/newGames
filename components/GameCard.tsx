@@ -50,9 +50,22 @@ export default function GameCard({
 
   return (
     <div
-      className="nd-card flex flex-col p-5 gap-4 transition-colors"
+      className="nd-card flex flex-col gap-4 transition-colors overflow-hidden"
       style={{ position: 'relative' }}
     >
+      {/* Thumbnail */}
+      {game.thumbnail_url && (
+        <div style={{ height: 130, margin: 0 }}>
+          <img
+            src={game.thumbnail_url}
+            alt={game.code_name ?? game.game_name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4 px-5 pb-5" style={{ paddingTop: game.thumbnail_url ? 0 : 20 }}>
+
       {/* Today dot */}
       {modifiedToday && (
         <span
@@ -140,6 +153,8 @@ export default function GameCard({
           Del
         </button>
       </div>
+
+      </div>{/* end inner padding wrapper */}
     </div>
   )
 }

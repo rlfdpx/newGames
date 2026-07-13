@@ -33,6 +33,33 @@
   }
 }
 
+/* Manual overrides — win over the media query */
+:root[data-theme="light"] {
+  --nd-bg:             #F5F5F5;
+  --nd-surface:        #FFFFFF;
+  --nd-surface-raised: #F0F0F0;
+  --nd-border:         #E8E8E8;
+  --nd-border-vis:     #CCCCCC;
+  --nd-text-disabled:  #999999;
+  --nd-text-secondary: #666666;
+  --nd-text-primary:   #1A1A1A;
+  --nd-text-display:   #000000;
+  --nd-interactive:    #007AFF;
+}
+
+:root[data-theme="dark"] {
+  --nd-bg:              #000000;
+  --nd-surface:         #111111;
+  --nd-surface-raised:  #1A1A1A;
+  --nd-border:          #222222;
+  --nd-border-vis:      #333333;
+  --nd-text-disabled:   #666666;
+  --nd-text-secondary:  #999999;
+  --nd-text-primary:    #E8E8E8;
+  --nd-text-display:    #FFFFFF;
+  --nd-interactive:     #5B9BF6;
+}
+
 body {
   background-color: var(--nd-bg);
   color: var(--nd-text-primary);

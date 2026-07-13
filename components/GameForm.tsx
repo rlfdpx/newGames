@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { GameRow } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 import { GAME_STATUSES } from '@/lib/constants'
 
 type FormData = {
@@ -11,6 +12,7 @@ type FormData = {
   release_date: string
   notes: string
   sort_order: number
+  thumbnail_url: string | null
 }
 
 const FIELD_STYLE: React.CSSProperties = {
@@ -34,22 +36,37 @@ export default function GameForm({
   onSave: (data: Omit<GameRow, 'id' | 'created_at' | 'updated_at' | 'team'>) => Promise<void>
   onCancel: () => void
 }) {
-  // GameForm is remounted each time it's opened (see app/page.tsx and
-  // app/game/[id]/page.tsx, which conditionally render it), so it's safe to
-  // seed state directly from `initial` here instead of syncing via an effect.
   const [form, setForm] = useState<FormData>(() => initial ? {
     game_name: initial.game_name, code_name: initial.code_name ?? '',
     overall_status: initial.overall_status, release_date: initial.release_date ?? '',
     notes: initial.notes ?? '', sort_order: initial.sort_order,
+    thumbnail_url: initial.thumbnail_url ?? null,
   } : {
     game_name: '', code_name: '', overall_status: 'In Development',
-    release_date: '', notes: '', sort_order: 0,
+    release_date: '', notes: '', sort_order: 0, thumbnail_url: null,
   })
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const set = (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm(f => ({ ...f, [key]: e.target.value }))
+
+  const handleThumbnail = async (file: File) => {
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop() ?? 'jpg'
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { data, error } = await supabase.storage
+        .from('game-thumbnails')
+        .upload(path, file, { upsert: true })
+      if (error) { console.error('Upload failed', error); return }
+      const { data: { publicUrl } } = supabase.storage
+        .from('game-thumbnails')
+        .getPublicUrl(data.path)
+      setForm(f => ({ ...f, thumbnail_url: publicUrl }))
+    } finally { setUploading(false) }
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +79,7 @@ export default function GameForm({
         release_date: form.release_date || null,
         notes: form.notes.trim() || null,
         sort_order: form.sort_order,
+        thumbnail_url: form.thumbnail_url,
       })
     } finally { setSaving(false) }
   }
@@ -69,7 +87,7 @@ export default function GameForm({
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style={{ background: 'rgba(0,0,0,0.8)' }}
+      style={{ background: 'rgba(0,0,0,0.8)', overflowY: 'auto' }}
     >
       <div
         style={{
@@ -79,6 +97,7 @@ export default function GameForm({
           padding: 24,
           width: '100%',
           maxWidth: 440,
+          margin: 'auto',
         }}
       >
         {/* Title */}
@@ -107,9 +126,52 @@ export default function GameForm({
           <Field label="Notes">
             <textarea value={form.notes} onChange={set('notes')} style={{ ...FIELD_STYLE, resize: 'none' }} rows={2} />
           </Field>
+          <Field label="Thumbnail">
+            {form.thumbnail_url && (
+              <div style={{ position: 'relative', marginBottom: 8 }}>
+                <img
+                  src={form.thumbnail_url}
+                  alt="Thumbnail preview"
+                  style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, thumbnail_url: null }))}
+                  className="nd-btn-ghost"
+                  style={{
+                    position: 'absolute', top: 6, right: 6,
+                    background: 'rgba(0,0,0,0.6)', fontSize: 10, padding: '2px 6px',
+                  }}
+                >
+                  [Remove]
+                </button>
+              </div>
+            )}
+            <label style={{
+              display: 'block',
+              border: '1px dashed var(--nd-border-vis)',
+              borderRadius: 4,
+              padding: '10px 14px',
+              cursor: 'pointer',
+              color: uploading ? 'var(--nd-text-disabled)' : 'var(--nd-text-secondary)',
+              fontFamily: 'Space Mono, monospace',
+              fontSize: 11,
+              letterSpacing: '0.06em',
+              textAlign: 'center',
+            }}>
+              {uploading ? '[UPLOADING...]' : '[CHOOSE IMAGE]'}
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                disabled={uploading}
+                onChange={e => { if (e.target.files?.[0]) handleThumbnail(e.target.files[0]) }}
+              />
+            </label>
+          </Field>
 
           <div className="flex gap-3 mt-2">
-            <button type="submit" disabled={saving} className="nd-btn-primary flex-1">
+            <button type="submit" disabled={saving || uploading} className="nd-btn-primary flex-1">
               {saving ? '[Saving...]' : initial ? '[Save]' : '[Add Game]'}
             </button>
             <button type="button" onClick={onCancel} className="nd-btn-secondary flex-1">

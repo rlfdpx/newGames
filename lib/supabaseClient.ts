@@ -17,8 +17,15 @@ export type GameRow = {
   notes: string | null
   sort_order: number
   team: string
+  thumbnail_url: string | null
   created_at: string
   updated_at: string
+}
+
+export type TeamSettings = {
+  team_slug: string
+  display_name: string
+  description: string | null
 }
 
 export type TaskRow = {

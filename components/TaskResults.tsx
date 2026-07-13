@@ -7,10 +7,11 @@ import TaskRow from './TaskRow'
 // Filtered task list for the portfolio page: matching tasks grouped by game,
 // with the same inline-editable rows as the per-game task board.
 export default function TaskResults({
-  games, tasks, onUpdate, onDelete,
+  games, tasks, assignees, onUpdate, onDelete,
 }: {
   games: GameRow[]
   tasks: TRow[]
+  assignees?: string[]
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
   onDelete: (id: string) => Promise<void>
 }) {
@@ -70,7 +71,7 @@ export default function TaskResults({
               </thead>
               <tbody>
                 {rows.map(t => (
-                  <TaskRow key={t.id} task={t} onUpdate={onUpdate} onDelete={onDelete} />
+                  <TaskRow key={t.id} task={t} onUpdate={onUpdate} onDelete={onDelete} assignees={assignees} />
                 ))}
               </tbody>
             </table>

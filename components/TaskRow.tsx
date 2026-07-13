@@ -12,33 +12,42 @@ import {
 } from '@/lib/constants'
 
 function InlineText({
-  value, onSave, placeholder = '—', type = 'text',
-}: { value: string; onSave: (v: string) => void; placeholder?: string; type?: 'text' | 'date' }) {
+  value, onSave, placeholder = '—', type = 'text', suggestions,
+}: { value: string; onSave: (v: string) => void; placeholder?: string; type?: 'text' | 'date'; suggestions?: string[] }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
+  const listId = suggestions ? `dl-${Math.random().toString(36).slice(2)}` : undefined
 
   const commit = () => { setEditing(false); if (draft !== value) onSave(draft) }
 
   if (editing) return (
-    <input
-      autoFocus
-      type={type}
-      value={draft}
-      onChange={e => setDraft(e.target.value)}
-      onBlur={commit}
-      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
-      style={{
-        background: 'var(--nd-surface-raised)',
-        border: '1px solid var(--nd-interactive)',
-        borderRadius: 2,
-        color: 'var(--nd-text-primary)',
-        fontFamily: 'Space Mono, monospace',
-        fontSize: 12,
-        padding: '2px 6px',
-        outline: 'none',
-        width: '100%',
-      }}
-    />
+    <>
+      {suggestions && (
+        <datalist id={listId}>
+          {suggestions.map(s => <option key={s} value={s} />)}
+        </datalist>
+      )}
+      <input
+        autoFocus
+        type={type}
+        list={listId}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
+        style={{
+          background: 'var(--nd-surface-raised)',
+          border: '1px solid var(--nd-interactive)',
+          borderRadius: 2,
+          color: 'var(--nd-text-primary)',
+          fontFamily: 'Space Mono, monospace',
+          fontSize: 12,
+          padding: '2px 6px',
+          outline: 'none',
+          width: '100%',
+        }}
+      />
+    </>
   )
 
   return (
@@ -88,11 +97,12 @@ function InlineSelect({
 }
 
 export default function TaskRow({
-  task, onUpdate, onDelete,
+  task, onUpdate, onDelete, assignees,
 }: {
   task: TRow
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
   onDelete: (id: string) => Promise<void>
+  assignees?: string[]
 }) {
   const overdue = isTaskOverdue(task)
   const save = (field: keyof TRow) => (raw: string) =>
@@ -134,7 +144,7 @@ export default function TaskRow({
 
       {/* Assignee */}
       <td className="px-3 py-2 min-w-[100px]">
-        <InlineText value={task.assignee ?? ''} onSave={save('assignee')} placeholder="—" />
+        <InlineText value={task.assignee ?? ''} onSave={save('assignee')} placeholder="—" suggestions={assignees} />
       </td>
 
       {/* Priority */}

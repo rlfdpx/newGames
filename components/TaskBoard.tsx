@@ -6,11 +6,12 @@ import { CATEGORIES } from '@/lib/taskTemplate'
 import TaskRow from './TaskRow'
 
 export default function TaskBoard({
-  tasks, gameId, allGames, onUpdate, onAdd, onAddToAll, onDelete,
+  tasks, gameId, allGames, assignees, onUpdate, onAdd, onAddToAll, onDelete,
 }: {
   tasks: TRow[]
   gameId: string
   allGames: GameRow[]
+  assignees?: string[]
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
   onAdd: (data: Omit<TRow, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
   onAddToAll: (data: Omit<TRow, 'id' | 'game_id' | 'created_at' | 'updated_at'>, allGames: GameRow[]) => Promise<void>
@@ -83,7 +84,7 @@ export default function TaskBoard({
                 </thead>
                 <tbody>
                   {catTasks.map(t => (
-                    <TaskRow key={t.id} task={t} onUpdate={onUpdate} onDelete={onDelete} />
+                    <TaskRow key={t.id} task={t} onUpdate={onUpdate} onDelete={onDelete} assignees={assignees} />
                   ))}
                 </tbody>
               </table>

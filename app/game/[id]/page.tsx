@@ -40,9 +40,9 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   const gameTasks = useMemo(() => tasks.filter(t => t.game_id === id), [tasks, id])
 
   const assignees = useMemo(() => {
-    const set = new Set(gameTasks.map(t => t.assignee).filter(Boolean) as string[])
+    const set = new Set(tasks.map(t => t.assignee).filter(Boolean) as string[])
     return [...set].sort()
-  }, [gameTasks])
+  }, [tasks])
 
   const filteredTasks = useMemo(() => {
     const s = filters.search.toLowerCase()
@@ -167,6 +167,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           tasks={filteredTasks}
           gameId={id}
           allGames={games}
+          assignees={assignees}
           onUpdate={updateTask}
           onAdd={addTask}
           onAddToAll={addTaskToAllGames}

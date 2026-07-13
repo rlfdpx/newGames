@@ -98,7 +98,7 @@ export default function Home() {
             <FilterBar filters={filters} assignees={assignees} onChange={setFilters} statusOptions={TASK_STATUSES} />
 
             {hasActiveFilters ? (
-              <TaskResults games={games} tasks={filteredTasks} onUpdate={updateTask} onDelete={deleteTask} />
+              <TaskResults games={games} tasks={filteredTasks} assignees={assignees} onUpdate={updateTask} onDelete={deleteTask} />
             ) : derived.length === 0 ? (
               <div className="text-center py-24">
                 <div className="nd-mono" style={{ color: 'var(--nd-text-disabled)', fontSize: 13 }}>

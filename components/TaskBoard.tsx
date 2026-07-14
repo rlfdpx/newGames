@@ -123,7 +123,7 @@ export default function TaskBoard({
                   >
                     All ({allGames.length})
                   </button>
-                  <button className="nd-btn-ghost" onClick={() => setAddingIn(null)}>[X]</button>
+                  <button className="nd-btn-ghost" onClick={() => setAddingIn(null)}>×</button>
                 </div>
               ) : (
                 <button

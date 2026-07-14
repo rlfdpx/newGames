@@ -111,7 +111,7 @@ export default function GameForm({
           <span className="nd-label" style={{ fontSize: 12 }}>
             {initial ? '[ Edit Game ]' : '[ New Game ]'}
           </span>
-          <button className="nd-btn-ghost" onClick={onCancel}>[X]</button>
+          <button className="nd-btn-ghost" onClick={onCancel}>×</button>
         </div>
 
         <form onSubmit={submit} className="flex flex-col gap-4">

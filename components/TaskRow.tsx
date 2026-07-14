@@ -185,7 +185,7 @@ export default function TaskRow({
           className="nd-btn-ghost opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ color: 'var(--nd-accent)', fontSize: 11, padding: '2px 6px' }}
         >
-          [X]
+          ×
         </button>
       </td>
     </tr>

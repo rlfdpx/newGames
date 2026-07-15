@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useId } from 'react'
+import { useState, useId, useRef } from 'react'
 import { TaskRow as TRow } from '@/lib/supabaseClient'
 import { isTaskOverdue } from '@/lib/derive'
 import { formatDate } from '@/lib/dates'
@@ -16,26 +16,30 @@ function InlineText({
 }: { value: string; onSave: (v: string) => void; placeholder?: string; type?: 'text' | 'date'; suggestions?: string[] }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
-  const uid = useId()
-  const listId = suggestions ? `dl-${uid}` : undefined
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  useId()
 
-  const commit = () => { setEditing(false); if (draft !== value) onSave(draft) }
+  const filtered = suggestions?.filter(s => s.toLowerCase().includes(draft.toLowerCase())) ?? []
+
+  const commit = (val = draft) => { setEditing(false); setShowSuggestions(false); if (val !== value) onSave(val) }
+  const pick = (s: string) => { setDraft(s); commit(s) }
 
   if (editing) return (
-    <>
-      {suggestions && (
-        <datalist id={listId}>
-          {suggestions.map(s => <option key={s} value={s} />)}
-        </datalist>
-      )}
+    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
       <input
         autoFocus
         type={type}
-        list={listId}
         value={draft}
-        onChange={e => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false) } }}
+        onChange={e => { setDraft(e.target.value); setShowSuggestions(true) }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={e => {
+          if (!containerRef.current?.contains(e.relatedTarget as Node)) commit()
+        }}
+        onKeyDown={e => {
+          if (e.key === 'Enter') commit()
+          if (e.key === 'Escape') { setDraft(value); setEditing(false); setShowSuggestions(false) }
+        }}
         style={{
           background: 'var(--nd-surface-raised)',
           border: '1px solid var(--nd-interactive)',
@@ -48,7 +52,44 @@ function InlineText({
           width: '100%',
         }}
       />
-    </>
+      {showSuggestions && filtered.length > 0 && (
+        <ul
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            zIndex: 50,
+            background: 'var(--nd-surface-raised)',
+            border: '1px solid var(--nd-interactive)',
+            borderRadius: 2,
+            listStyle: 'none',
+            margin: '2px 0 0',
+            padding: 0,
+            minWidth: '100%',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          }}
+        >
+          {filtered.map(s => (
+            <li
+              key={s}
+              onMouseDown={e => { e.preventDefault(); pick(s) }}
+              style={{
+                padding: '4px 8px',
+                cursor: 'pointer',
+                color: 'var(--nd-text-primary)',
+                fontFamily: 'Space Mono, monospace',
+                fontSize: 12,
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--nd-interactive)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 
   return (

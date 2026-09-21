@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { getAccessToken } from './session'
 
 // Supabase throws if the URL isn't http/https. During build the env vars are placeholder strings,
 // so we guard with a format check and fall back to a no-op URL.
@@ -6,7 +7,14 @@ const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const url = /^https?:\/\//.test(rawUrl) ? rawUrl : 'https://placeholder.supabase.co'
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-key'
 
-export const supabase = createClient(url, key)
+// `accessToken` makes every REST call — and the realtime socket — carry the
+// Supabase JWT minted from the caller's Cloudflare Access identity, instead of
+// relying on the anon key that anyone can read out of the JS bundle.
+// Returning null degrades to the anon key, which is the correct behaviour
+// before 002_rls_authenticated.sql has been run.
+export const supabase = createClient(url, key, {
+  accessToken: getAccessToken,
+})
 
 export type GameRow = {
   id: string
@@ -26,6 +34,15 @@ export type TeamSettings = {
   team_slug: string
   display_name: string
   description: string | null
+}
+
+export type Person = {
+  id: string
+  email: string
+  display_name: string
+  /** Other spellings of this person's name already present in tasks.assignee. */
+  aliases: string[]
+  is_admin: boolean
 }
 
 export type TaskRow = {

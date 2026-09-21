@@ -112,23 +112,40 @@ as a symmetric JWK precisely so HS256 tokens keep validating, which is what
 > **Treat this secret like the service-role key.** Anyone holding it can sign a
 > `role: service_role` token and read or write the whole database, RLS or no
 > RLS. Never paste it into chat, a screenshot, or the repo — `.env.local` and
-> Vercel's environment variables only. If it has ever been exposed, rotate it
-> (Settings → JWT Keys → rotate to a standby key).
+> Vercel's environment variables only.
+>
+> **There is no quick rotation for it.** Rotating creates a new asymmetric
+> signing key; it does not change the legacy secret's value. The only way to
+> invalidate the old value is to *revoke* it — and revoking it rejects every JWT
+> signed with it, which is exactly what `/api/session` produces. So a leaked
+> legacy secret cannot be cleaned up in isolation: it requires the ES256
+> migration below, then revocation.
 
-### Known expiry date on this approach
+### The ES256 migration — how to retire the legacy secret
 
 The legacy secret is deprecated, and Supabase's API-keys page invites you to
 disable it. **Don't** — revoking it breaks sign-in, because `/api/session`
 signs with it.
 
 The durable replacement is Supabase Third-Party Auth, which requires
-asymmetric tokens: generate an EC P-256 keypair, sign ES256 with a `kid`, and
-register the public key with the project. The dashboard doesn't expose a generic
-provider, but the Management API does, via `custom_jwks` on
-`/v1/projects/{ref}/config/auth/third-party-auth` — so the public key can be
-registered directly, with no public JWKS endpoint to punch through the Access
-gate. Worth doing before anyone revokes the legacy secret; not a blocker for
-launch.
+asymmetric tokens:
+
+1. Generate an EC P-256 keypair. Private JWK → Vercel as `SESSION_SIGNING_KEY`.
+2. Register the **public** JWK with the project via the Management API:
+   `custom_jwks` on `/v1/projects/{ref}/config/auth/third-party-auth`. The
+   dashboard has no generic-provider UI, but the API does — and `custom_jwks`
+   takes the key inline, so there is no public JWKS endpoint to punch through
+   the Access gate.
+3. Change `/api/session` to sign ES256 with a `kid` and a matching `iss`.
+4. Verify sign-in still works.
+5. *Then* revoke the legacy JWT secret. The `anon`/`service_role` JWT-based keys
+   must be disabled first — already true here, since this project uses the newer
+   `sb_publishable_` / `sb_secret_` keys.
+
+Do this if the legacy secret has ever been exposed, or before anyone revokes it
+for unrelated reasons. It is not a blocker for launch, and step 8 below is worth
+running regardless: step 8 stops the publishable key (which genuinely ships in
+the JS bundle) from touching the database, a wider hole than the legacy secret.
 
 ## 7. Environment variables
 

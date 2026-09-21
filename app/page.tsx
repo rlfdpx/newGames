@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useAllTeamSettings } from '@/lib/useTeamSettings'
 import ThemeToggle from '@/components/ThemeToggle'
+import UserBadge from '@/components/UserBadge'
 
 const TEAMS = [
   { slug: 'haiti',   label: 'HT' },
@@ -69,8 +70,9 @@ export default function Home() {
       className="min-h-screen flex flex-col items-center justify-center"
       style={{ background: 'var(--nd-bg)' }}
     >
-      {/* Theme toggle — top right */}
-      <div style={{ position: 'fixed', top: 16, right: 20, zIndex: 10 }}>
+      {/* Signed-in identity + theme toggle — top right */}
+      <div style={{ position: 'fixed', top: 16, right: 20, zIndex: 10 }} className="flex items-center gap-3">
+        <UserBadge />
         <ThemeToggle />
       </div>
 
@@ -144,6 +146,15 @@ export default function Home() {
             )
           })}
         </div>
+
+        {/* Cross-team view of whatever is assigned to the signed-in person */}
+        <Link
+          href="/my"
+          className="nd-btn-ghost mt-6 block text-center"
+          style={{ textDecoration: 'none', fontSize: 11, letterSpacing: '0.08em', padding: '10px' }}
+        >
+          [MY TASKS] →
+        </Link>
 
         {saving && (
           <div className="nd-label text-center mt-4" style={{ color: 'var(--nd-text-disabled)' }}>

@@ -14,22 +14,29 @@ import RecentActivity from '@/components/RecentActivity'
 import ErrorBanner from '@/components/ErrorBanner'
 import TaskResults from '@/components/TaskResults'
 import ThemeToggle from '@/components/ThemeToggle'
+import UserBadge from '@/components/UserBadge'
+import { usePeople } from '@/lib/useSession'
 import { TASK_STATUSES } from '@/lib/constants'
 
 export default function TeamPage({ params }: { params: Promise<{ team: string }> }) {
   const { team } = use(params)
   const { games, tasks, loading, error, clearError, addGame, updateGame, deleteGame, updateTask, deleteTask } = useGames(team)
   const { settings: teamSettings } = useTeamSettings(team)
+  const people = usePeople()
   const [showForm, setShowForm] = useState(false)
   const [editGame, setEditGame] = useState<GameWithStats | null>(null)
   const [filters, setFilters] = useState<Filters>({ status: '', assignee: '', priority: '', search: '' })
 
   const derived = useMemo(() => games.map(g => deriveGame(g, tasks)), [games, tasks])
 
+  // The roster is the preferred source of assignee suggestions, but names
+  // already typed into tasks are kept alongside it — so this still works before
+  // 001_people.sql is run, and legacy spellings stay selectable either way.
   const assignees = useMemo(() => {
     const set = new Set(tasks.map(t => t.assignee).filter(Boolean) as string[])
+    people.forEach(p => set.add(p.display_name))
     return [...set].sort()
-  }, [tasks])
+  }, [tasks, people])
 
   const modifiedTodayIds = useMemo(() => {
     const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0)
@@ -93,6 +100,14 @@ export default function TeamPage({ params }: { params: Promise<{ team: string }>
             <div className="nd-label mt-1" style={{ letterSpacing: '0.1em' }}>Portfolio · Live</div>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/my"
+              className="nd-btn-ghost"
+              style={{ fontSize: 11, letterSpacing: '0.08em', textDecoration: 'none' }}
+            >
+              [MY TASKS]
+            </Link>
+            <UserBadge />
             <ThemeToggle />
             <button className="nd-btn-primary" onClick={() => setShowForm(true)}>
               + New Game

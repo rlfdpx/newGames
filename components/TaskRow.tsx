@@ -139,12 +139,15 @@ function InlineSelect({
 }
 
 export default function TaskRow({
-  task, onUpdate, onDelete, assignees,
+  task, onUpdate, onDelete, assignees, leadCell,
 }: {
   task: TRow
   onUpdate: (id: string, data: Partial<TRow>) => Promise<void>
-  onDelete: (id: string) => Promise<void>
+  /** Omitted on the My Tasks view, which edits tasks but doesn't remove them. */
+  onDelete?: (id: string) => Promise<void>
   assignees?: string[]
+  /** Extra first column. My Tasks spans teams, so its rows lead with the game. */
+  leadCell?: React.ReactNode
 }) {
   const overdue = isTaskOverdue(task)
   const save = (field: keyof TRow) => (raw: string) =>
@@ -166,6 +169,8 @@ export default function TaskRow({
         borderLeft: leftBorder,
       }}
     >
+      {leadCell && <td className="px-3 py-2">{leadCell}</td>}
+
       {/* Task name */}
       <td className="px-3 py-2 min-w-[160px]">
         <InlineText
@@ -221,13 +226,15 @@ export default function TaskRow({
 
       {/* Delete */}
       <td className="px-3 py-2">
-        <button
-          onClick={() => confirm(`Delete "${task.name}"?`) && onDelete(task.id)}
-          className="nd-btn-ghost opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'var(--nd-accent)', fontSize: 11, padding: '2px 6px' }}
-        >
-          ×
-        </button>
+        {onDelete && (
+          <button
+            onClick={() => confirm(`Delete "${task.name}"?`) && onDelete(task.id)}
+            className="nd-btn-ghost opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ color: 'var(--nd-accent)', fontSize: 11, padding: '2px 6px' }}
+          >
+            ×
+          </button>
+        )}
       </td>
     </tr>
   )

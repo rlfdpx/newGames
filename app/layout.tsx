@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Doto, Space_Grotesk, Space_Mono } from "next/font/google";
+import { SessionProvider } from "@/lib/useSession";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -37,7 +38,9 @@ export default function RootLayout({
         {/* Restore saved theme before first paint to prevent flash */}
         <script dangerouslySetInnerHTML={{ __html: `try{const t=localStorage.getItem('nd-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}` }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }

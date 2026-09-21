@@ -13,6 +13,7 @@ import {
   ACCESS_HEADER,
   USER_EMAIL_HEADER,
   USER_SUB_HEADER,
+  accessConfigured,
   devIdentity,
   readAssertion,
   verifyAccessJwt,
@@ -42,6 +43,17 @@ function denied(): NextResponse {
 }
 
 export async function proxy(request: NextRequest) {
+  // Missing env vars and a forged token both end in a 403, which is correct but
+  // indistinguishable from the outside. Say so in the server log, so "the whole
+  // team is locked out" is a one-line diagnosis in Vercel's logs rather than a
+  // guess. Never surfaced to the client.
+  if (!devIdentity() && !accessConfigured()) {
+    console.error(
+      '[proxy] CF_ACCESS_TEAM_DOMAIN and/or CF_ACCESS_AUD are not set — ' +
+      'every request will be denied until they are configured.',
+    )
+  }
+
   const identity =
     devIdentity() ??
     (await verifyAccessJwt(
